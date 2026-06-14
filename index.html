@@ -146,6 +146,12 @@
 
         .btn-main:hover { background: rgba(255, 255, 255, 0.85); }
 
+        .btn-main:disabled {
+            background: rgba(255, 255, 255, 0.35);
+            cursor: not-allowed;
+            transform: none;
+        }
+
         /* サブボタン：白枠 */
         .btn-sub {
             background: transparent;
@@ -163,33 +169,6 @@
             align-items: center;
             gap: 12px;
             margin-top: 14px;
-        }
-
-        /* ---- プロンプトボックス ---- */
-        .prompt-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .prompt-label {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .prompt-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 16px;
-            font-size: 0.83rem;
-            white-space: pre-wrap;
-            line-height: 1.75;
-            color: var(--text-dim);
-            max-height: 300px;
-            overflow-y: auto;
         }
 
         /* ---- 例ボタン ---- */
@@ -220,34 +199,21 @@
 
         .example-btn:hover { background: rgba(255, 255, 255, 0.16); }
 
-        /* ---- API注釈 ---- */
-        .api-note {
-            font-size: 0.78rem;
+        /* ---- ローディング ---- */
+        .loading {
+            font-size: 0.88rem;
             color: var(--text-muted);
-            margin-bottom: 14px;
         }
 
-        /* ---- 案内テキスト ---- */
-        .step-note {
-            font-size: 0.82rem;
-            color: var(--text-dim);
-            font-weight: 600;
+        /* ---- エラー ---- */
+        .error-msg {
+            font-size: 0.88rem;
+            color: #ff8080;
             margin-top: 12px;
             padding: 10px 14px;
-            background: rgba(220, 180, 30, 0.30);
+            background: rgba(255, 80, 80, 0.15);
             border-radius: 8px;
         }
-
-        /* ---- コピー完了 ---- */
-        .copy-feedback {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .copy-feedback.show { opacity: 1; }
 
         /* ---- アコーディオン ---- */
         .accordion-item {
@@ -294,16 +260,6 @@
             color: var(--text-dim);
         }
 
-        .output-intro {
-            font-size: 0.88rem;
-            line-height: 1.8;
-            margin-bottom: 14px;
-            padding: 12px 16px;
-            background: rgba(232, 101, 74, 0.22);
-            border-radius: 10px;
-            color: var(--text-dim);
-        }
-
         /* ---- 非表示 ---- */
         .hidden { display: none; }
     </style>
@@ -332,40 +288,14 @@
                 <button class="example-btn" onclick="setExample(this)">手順の説明と同時作業についていけない</button>
             </div>
             <div class="action-row">
-                <button class="btn-main" onclick="generatePrompt()">分解する</button>
+                <button class="btn-main" id="btn-decompose" onclick="decompose()">分解する</button>
                 <button class="btn-sub" onclick="resetAll()">クリア</button>
+                <span class="loading hidden" id="loading">分解中...</span>
             </div>
+            <div class="error-msg hidden" id="error-msg"></div>
         </div>
 
-        <!-- STEP 2: 生成プロンプト -->
-        <div class="card hidden" id="section-prompt">
-            <div class="card-title">
-                <span class="step-badge">2</span>プロンプトをコピーしてAIへ
-            </div>
-            <p class="api-note">手動コピーで対応。API接続時はステップ2・3が自動化予定。</p>
-            <div class="prompt-header">
-                <span class="prompt-label">生成されたプロンプト</span>
-                <div class="action-row" style="margin-top: 0;">
-                    <button class="btn-sub" onclick="copyPrompt()">コピー</button>
-                    <span class="copy-feedback" id="feedback-prompt">コピーしました</span>
-                </div>
-            </div>
-            <div class="prompt-box" id="prompt-output"></div>
-            <p class="step-note">このプロンプトをコピーして、AIに貼り付けてください。</p>
-        </div>
-
-        <!-- STEP 3: AI回答の貼り付け -->
-        <div class="card hidden" id="section-result">
-            <div class="card-title">
-                <span class="step-badge">3</span>AIの回答を貼り付ける
-            </div>
-            <textarea id="result-input" rows="10" placeholder="AIの回答をここに貼り付けてください"></textarea>
-            <div class="action-row">
-                <button class="btn-main" onclick="renderOutput()">表示する</button>
-            </div>
-        </div>
-
-        <!-- STEP 3.5: 整形表示 -->
+        <!-- 分解・対応の一覧 -->
         <div class="card hidden" id="section-rendered">
             <div class="card-title">
                 <span class="step-badge">↓</span>分解・対応の一覧
@@ -465,64 +395,11 @@
         drawBackground();
         window.addEventListener('resize', drawBackground);
 
-        // ---- プロンプトテンプレート ----
-        const EXAMPLES = `【例1】
-課題：走り回る2歳児を黒板へ注目させる
-分解：
-走り回っているのは、身体が動くことを求めているからであり、前庭覚（身体を動かしたい感覚）を満たすことにより、注意が身体から黒板に向かう。
-→先生が抱っこして揺らすことで前庭覚を満たし、黒板に注目できた。
-
-【例2】
-課題：「太郎くんのうしろに並んで」の指示に従わせる
-分解：
-「太郎くん」という要素の中に、相貌認知（顔を見分ける能力）が折り畳まれていて、指示する側は無意識に「太郎くんの顔を見分けられる」ことを前提としていたが、相貌認知は全員が持っているわけではない。
-→相貌認知が困難な場合、「太郎くん」の特定そのものを支援した。
-
-【例3】
-課題：「大玉送り」で相手チームの邪魔に行かないようにする
-分解：
-競争を理解し、チームのために勝とうとしており、「相手を遅らせれば勝てる」という戦略的思考があった。さらには「なんでみんなは協力してくれないのか」とまで思っていた。足りなかったのは暗黙のルールだった。
-→「相手チームのエリアには行かない」「相手チームの邪魔をしない」という暗黙ルールを伝えた。`;
-
-        function buildPrompt(task) {
-            return `あなたは、「できて当たり前」とされる行動・指示の中に隠れた要素と必要な能力を分解する専門家です。
-
-【分解の原則】
-- 文中の全要素（人・物・位置・動作）を多方面から掘る。掘る範囲を先に限定しない。
-- 隠れた要素は別要素の内側に折り畳まれている。一段で止めず再分解する。
-- できる人が通る経路を必須条件と混同しない。経路は一本ではない。
-- 対処や代替が考えられる深さまで掘る。それ以上は掘らない。
-- 学術語はそのまま使い、括弧で平易な説明を添える。
-
-${EXAMPLES}
-
-【課題】
-${task}
-
-この課題を実行するために必要な能力を、関わる全要素（人・物・位置・動作）ごとに分解してください。
-隠れた要素は再分解してください。
-各要素への対応方法も提案してください。
-
-【出力形式】厳守
-以下の形式のみで出力すること。前置き・総括・まとめは一切書かない。
-
-## 「人」の要素
-（分解と対応方法）
-
-## 「物」の要素
-（分解と対応方法）
-
-ルール：各要素は必ず「## 「○○」の要素」で始める。「## 」の後は「「要素名」の要素」の形のみ。`;
-        }
-
         function resetAll() {
             document.getElementById('task-input').value = '';
-            document.getElementById('result-input').value = '';
-            document.getElementById('prompt-output').textContent = '';
             document.getElementById('output-rendered').innerHTML = '';
-            document.getElementById('section-prompt').classList.add('hidden');
-            document.getElementById('section-result').classList.add('hidden');
             document.getElementById('section-rendered').classList.add('hidden');
+            document.getElementById('error-msg').classList.add('hidden');
             document.getElementById('task-input').focus();
         }
 
@@ -530,26 +407,50 @@ ${task}
             document.getElementById('task-input').value = btn.textContent;
         }
 
-        function generatePrompt() {
+        async function decompose() {
             const task = document.getElementById('task-input').value.trim();
             if (!task) return;
 
-            document.getElementById('prompt-output').textContent = buildPrompt(task);
-            document.getElementById('section-prompt').classList.remove('hidden');
-            document.getElementById('section-result').classList.remove('hidden');
-            // 再生成時にアコーディオンをリセット
+            const btnDecompose = document.getElementById('btn-decompose');
+            const loading = document.getElementById('loading');
+            const errorMsg = document.getElementById('error-msg');
+
+            // ローディング開始
+            btnDecompose.disabled = true;
+            loading.classList.remove('hidden');
+            errorMsg.classList.add('hidden');
             document.getElementById('section-rendered').classList.add('hidden');
             document.getElementById('output-rendered').innerHTML = '';
+
+            try {
+                const response = await fetch('/api/decompose', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'エラーが発生しました');
+                }
+
+                renderAccordion(data.result);
+
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btnDecompose.disabled = false;
+                loading.classList.add('hidden');
+            }
         }
 
-        function renderOutput() {
-            const text = document.getElementById('result-input').value.trim();
-            if (!text) return;
-
+        // APIの結果テキストをアコーディオンに変換して表示する
+        function renderAccordion(text) {
             const container = document.getElementById('output-rendered');
             container.innerHTML = '';
 
-            // ## で始まる行を区切りとして分割
             const parts = text.split(/\n(?=## )/);
 
             parts.forEach(part => {
@@ -570,11 +471,6 @@ ${task}
                         <div class="accordion-body hidden">${body.replace(/\n/g, '<br>')}</div>
                     `;
                     container.appendChild(item);
-                } else if (part.trim()) {
-                    const intro = document.createElement('div');
-                    intro.className = 'output-intro';
-                    intro.innerHTML = part.trim().replace(/\n/g, '<br>');
-                    container.appendChild(intro);
                 }
             });
 
@@ -587,17 +483,6 @@ ${task}
             const isOpen = !body.classList.contains('hidden');
             body.classList.toggle('hidden');
             icon.classList.toggle('open', !isOpen);
-        }
-
-        function copyPrompt() {
-            const text = document.getElementById('prompt-output').textContent;
-            navigator.clipboard.writeText(text).then(() => flash('feedback-prompt'));
-        }
-
-        function flash(id) {
-            const el = document.getElementById(id);
-            el.classList.add('show');
-            setTimeout(() => el.classList.remove('show'), 2000);
         }
     </script>
 </body>
