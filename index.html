@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>それ！できて当たり前？</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet">
+    <style>
+        /* ---- デザイン変数 ---- */
+        :root {
+            --bg: #222233;
+            --text: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.60);
+            --text-dim: rgba(255, 255, 255, 0.88);
+            --dark: #1a1918;
+            --border: rgba(255, 255, 255, 0.18);
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+            --radius-card: 18px;
+            --radius-btn: 24px;
+            --max-width: 680px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            line-height: 1.75;
+            padding: 52px 20px 100px;
+        }
+
+        /* ---- 背景キャンバス ---- */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ---- ヘッダー ---- */
+        header {
+            text-align: center;
+            margin-bottom: 52px;
+        }
+
+        h1 {
+            font-family: 'Hachi Maru Pop', sans-serif;
+            font-size: 2.1rem;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 0.88rem;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* ---- カード（すりガラス） ---- */
+        .card {
+            background: rgba(64, 64, 64, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow);
+            padding: 26px 28px;
+            margin-bottom: 20px;
+        }
+
+        /* ---- ステップバッジ（白統一） ---- */
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--dark);
+            background: var(--text);
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.04em;
+            margin-bottom: 16px;
+        }
+
+        /* ---- テキストエリア ---- */
+        textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-family: inherit;
+            font-size: 0.97rem;
+            color: var(--text);
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea::placeholder { color: rgba(255, 255, 255, 0.35); }
+        textarea:focus { border-color: rgba(255, 255, 255, 0.55); }
+
+        /* ---- ボタン共通 ---- */
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            border-radius: var(--radius-btn);
+            font-weight: 700;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        button:active { transform: scale(0.97); }
+
+        /* 主要ボタン：白 */
+        .btn-main {
+            background: var(--text);
+            color: var(--dark);
+            padding: 11px 30px;
+            font-size: 0.95rem;
+        }
+
+        .btn-main:hover { background: rgba(255, 255, 255, 0.85); }
+
+        /* サブボタン：白枠 */
+        .btn-sub {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid rgba(255, 255, 255, 0.55);
+            padding: 7px 20px;
+            font-size: 0.85rem;
+        }
+
+        .btn-sub:hover { background: rgba(255, 255, 255, 0.12); }
+
+        /* ---- アクション行 ---- */
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        /* ---- プロンプトボックス ---- */
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .prompt-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .prompt-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 0.83rem;
+            white-space: pre-wrap;
+            line-height: 1.75;
+            color: var(--text-dim);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* ---- 例ボタン ---- */
+        .example-area {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .example-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .example-btn {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .example-btn:hover { background: rgba(255, 255, 255, 0.16); }
+
+        /* ---- API注釈 ---- */
+        .api-note {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        /* ---- 案内テキスト ---- */
+        .step-note {
+            font-size: 0.82rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: rgba(220, 180, 30, 0.30);
+            border-radius: 8px;
+        }
+
+        /* ---- コピー完了 ---- */
+        .copy-feedback {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .copy-feedback.show { opacity: 1; }
+
+        /* ---- アコーディオン ---- */
+        .accordion-item {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            width: 100%;
+            text-align: left;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.93rem;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .accordion-header:hover { background: rgba(255, 255, 255, 0.14); }
+
+        .accordion-icon {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            margin-left: 12px;
+            transition: transform 0.2s;
+        }
+
+        .accordion-icon.open { transform: rotate(180deg); }
+
+        .accordion-body {
+            padding: 14px 18px;
+            font-size: 0.88rem;
+            line-height: 1.8;
+            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-dim);
+        }
+
+        .output-intro {
+            font-size: 0.88rem;
+            line-height: 1.8;
+            margin-bottom: 14px;
+            padding: 12px 16px;
+            background: rgba(232, 101, 74, 0.22);
+            border-radius: 10px;
+            color: var(--text-dim);
+        }
+
+        /* ---- 非表示 ---- */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="container">
+
+        <header>
+            <h1>それ！できて当たり前？</h1>
+            <p class="subtitle">みんなは簡単にやっているのに、難しくて困っていることはありませんか？<br>そんな困りごとを入力してください。一緒に考えてみましょう。<br><br>「できて当たり前」とされる行動・指示を、<br>要素と必要な能力に分解し対策を提案します。</p>
+        </header>
+
+        <!-- STEP 1: 課題入力 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="step-badge">1</span>困りごとを入力する
+            </div>
+            <textarea id="task-input" rows="4" placeholder="行動や指示を入力してください"></textarea>
+            <div class="example-area">
+                <span class="example-label">例（クリックで入力）：</span>
+                <button class="example-btn" onclick="setExample(this)">靴ひもをうまく結べない</button>
+                <button class="example-btn" onclick="setExample(this)">走り回る2歳児を絵本に注目させる</button>
+                <button class="example-btn" onclick="setExample(this)">「大玉送り」で相手チームの邪魔に行かないようにする</button>
+                <button class="example-btn" onclick="setExample(this)">「太郎くんの後ろに並んで」の指示がわからない</button>
+                <button class="example-btn" onclick="setExample(this)">手順の説明と同時作業についていけない</button>
+            </div>
+            <div class="action-row">
+                <button class="btn-main" onclick="generatePrompt()">分解する</button>
+                <button class="btn-sub" onclick="resetAll()">クリア</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: 生成プロンプト -->
+        <div class="card hidden" id="section-prompt">
+            <div class="card-title">
+                <span class="step-badge">2</span>プロンプトをコピーしてAIへ
+            </div>
+            <p class="api-note">手動コピーで対応。API接続時はステップ2・3が自動化予定。</p>
+            <div class="prompt-header">
+                <span class="prompt-label">生成されたプロンプト</span>
+                <div class="action-row" style="margin-top: 0;">
+                    <button class="btn-sub" onclick="copyPrompt()">コピー</button>
+                    <span class="copy-feedback" id="feedback-prompt">コピーしました</span>
+                </div>
+            </div>
+            <div class="prompt-box" id="prompt-output"></div>
+            <p class="step-note">このプロンプトをコピーして、AIに貼り付けてください。</p>
+        </div>
+
+        <!-- STEP 3: AI回答の貼り付け -->
+        <div class="card hidden" id="section-result">
+            <div class="card-title">
+                <span class="step-badge">3</span>AIの回答を貼り付ける
+            </div>
+            <textarea id="result-input" rows="10" placeholder="AIの回答をここに貼り付けてください"></textarea>
+            <div class="action-row">
+                <button class="btn-main" onclick="renderOutput()">表示する</button>
+            </div>
+        </div>
+
+        <!-- STEP 3.5: 整形表示 -->
+        <div class="card hidden" id="section-rendered">
+            <div class="card-title">
+                <span class="step-badge">↓</span>分解・対応の一覧
+            </div>
+            <div id="output-rendered"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // ---- ガチャガチャ背景 ----
+        function drawBackground() {
+            const canvas = document.getElementById('bg-canvas');
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;
+            const H = canvas.height;
+
+            const colors = [
+                'rgba(230,40,40,0.70)',
+                'rgba(20,180,175,0.85)',
+                'rgba(250,210,0,0.75)',
+                'rgba(220,40,140,0.68)',
+                'rgba(40,190,80,0.68)',
+                'rgba(200,40,200,0.62)',
+                'rgba(110,60,230,0.65)',
+                'rgba(20,140,240,0.68)',
+            ];
+
+            const rand = (min, max) => Math.random() * (max - min) + min;
+            const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+            for (let i = 0; i < 180; i++) {
+                const x = rand(0, W);
+                const y = rand(0, H);
+                const color = pick(colors);
+                const shape = Math.floor(rand(0, 5));
+
+                // 上部ほど図形を薄くする
+                ctx.globalAlpha = Math.min(1, y / 280);
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rand(0, Math.PI * 2));
+
+                switch (shape) {
+                    case 0: // 塗り円
+                        ctx.beginPath();
+                        ctx.arc(0, 0, rand(18, 48), 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.fill();
+                        break;
+                    case 1: // 輪郭円
+                        ctx.beginPath();
+                        ctx.arc(0, 0, rand(22, 52), 0, Math.PI * 2);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = rand(4, 8);
+                        ctx.stroke();
+                        break;
+                    case 2: // プラス
+                        const ps = rand(18, 42);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = rand(5, 10);
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(-ps, 0); ctx.lineTo(ps, 0);
+                        ctx.moveTo(0, -ps); ctx.lineTo(0, ps);
+                        ctx.stroke();
+                        break;
+                    case 3: // 4角星
+                        const ss = rand(18, 46);
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        for (let j = 0; j < 4; j++) {
+                            const a  = (j * Math.PI) / 2;
+                            const a1 = a - Math.PI / 4;
+                            const a2 = a + Math.PI / 4;
+                            if (j === 0) ctx.moveTo(Math.cos(a1) * ss * 0.38, Math.sin(a1) * ss * 0.38);
+                            ctx.lineTo(Math.cos(a) * ss, Math.sin(a) * ss);
+                            ctx.lineTo(Math.cos(a2) * ss * 0.38, Math.sin(a2) * ss * 0.38);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                    case 4: // 四角
+                        const ds = rand(18, 40);
+                        ctx.fillStyle = color;
+                        ctx.fillRect(-ds / 2, -ds / 2, ds, ds);
+                        break;
+                }
+
+                ctx.restore();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        drawBackground();
+        window.addEventListener('resize', drawBackground);
+
+        // ---- プロンプトテンプレート ----
+        const EXAMPLES = `【例1】
+課題：走り回る2歳児を黒板へ注目させる
+分解：
+走り回っているのは、身体が動くことを求めているからであり、前庭覚（身体を動かしたい感覚）を満たすことにより、注意が身体から黒板に向かう。
+→先生が抱っこして揺らすことで前庭覚を満たし、黒板に注目できた。
+
+【例2】
+課題：「太郎くんのうしろに並んで」の指示に従わせる
+分解：
+「太郎くん」という要素の中に、相貌認知（顔を見分ける能力）が折り畳まれていて、指示する側は無意識に「太郎くんの顔を見分けられる」ことを前提としていたが、相貌認知は全員が持っているわけではない。
+→相貌認知が困難な場合、「太郎くん」の特定そのものを支援した。
+
+【例3】
+課題：「大玉送り」で相手チームの邪魔に行かないようにする
+分解：
+競争を理解し、チームのために勝とうとしており、「相手を遅らせれば勝てる」という戦略的思考があった。さらには「なんでみんなは協力してくれないのか」とまで思っていた。足りなかったのは暗黙のルールだった。
+→「相手チームのエリアには行かない」「相手チームの邪魔をしない」という暗黙ルールを伝えた。`;
+
+        function buildPrompt(task) {
+            return `あなたは、「できて当たり前」とされる行動・指示の中に隠れた要素と必要な能力を分解する専門家です。
+
+【分解の原則】
+- 文中の全要素（人・物・位置・動作）を多方面から掘る。掘る範囲を先に限定しない。
+- 隠れた要素は別要素の内側に折り畳まれている。一段で止めず再分解する。
+- できる人が通る経路を必須条件と混同しない。経路は一本ではない。
+- 対処や代替が考えられる深さまで掘る。それ以上は掘らない。
+- 学術語はそのまま使い、括弧で平易な説明を添える。
+
+${EXAMPLES}
+
+【課題】
+${task}
+
+この課題を実行するために必要な能力を、関わる全要素（人・物・位置・動作）ごとに分解してください。
+隠れた要素は再分解してください。
+各要素への対応方法も提案してください。
+
+【出力形式】厳守
+以下の形式のみで出力すること。前置き・総括・まとめは一切書かない。
+
+## 「人」の要素
+（分解と対応方法）
+
+## 「物」の要素
+（分解と対応方法）
+
+ルール：各要素は必ず「## 「○○」の要素」で始める。「## 」の後は「「要素名」の要素」の形のみ。`;
+        }
+
+        function resetAll() {
+            document.getElementById('task-input').value = '';
+            document.getElementById('result-input').value = '';
+            document.getElementById('prompt-output').textContent = '';
+            document.getElementById('output-rendered').innerHTML = '';
+            document.getElementById('section-prompt').classList.add('hidden');
+            document.getElementById('section-result').classList.add('hidden');
+            document.getElementById('section-rendered').classList.add('hidden');
+            document.getElementById('task-input').focus();
+        }
+
+        function setExample(btn) {
+            document.getElementById('task-input').value = btn.textContent;
+        }
+
+        function generatePrompt() {
+            const task = document.getElementById('task-input').value.trim();
+            if (!task) return;
+
+            document.getElementById('prompt-output').textContent = buildPrompt(task);
+            document.getElementById('section-prompt').classList.remove('hidden');
+            document.getElementById('section-result').classList.remove('hidden');
+            // 再生成時にアコーディオンをリセット
+            document.getElementById('section-rendered').classList.add('hidden');
+            document.getElementById('output-rendered').innerHTML = '';
+        }
+
+        function renderOutput() {
+            const text = document.getElementById('result-input').value.trim();
+            if (!text) return;
+
+            const container = document.getElementById('output-rendered');
+            container.innerHTML = '';
+
+            // ## で始まる行を区切りとして分割
+            const parts = text.split(/\n(?=## )/);
+
+            parts.forEach(part => {
+                const lines = part.split('\n');
+                const first = lines[0].trim();
+
+                if (first.startsWith('## ')) {
+                    const title = first.replace('## ', '').trim();
+                    const body  = lines.slice(1).join('\n').trim();
+
+                    const item = document.createElement('div');
+                    item.className = 'accordion-item';
+                    item.innerHTML = `
+                        <button class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>${title}</span>
+                            <span class="accordion-icon">▼</span>
+                        </button>
+                        <div class="accordion-body hidden">${body.replace(/\n/g, '<br>')}</div>
+                    `;
+                    container.appendChild(item);
+                } else if (part.trim()) {
+                    const intro = document.createElement('div');
+                    intro.className = 'output-intro';
+                    intro.innerHTML = part.trim().replace(/\n/g, '<br>');
+                    container.appendChild(intro);
+                }
+            });
+
+            document.getElementById('section-rendered').classList.remove('hidden');
+        }
+
+        function toggleAccordion(btn) {
+            const body = btn.nextElementSibling;
+            const icon = btn.querySelector('.accordion-icon');
+            const isOpen = !body.classList.contains('hidden');
+            body.classList.toggle('hidden');
+            icon.classList.toggle('open', !isOpen);
+        }
+
+        function copyPrompt() {
+            const text = document.getElementById('prompt-output').textContent;
+            navigator.clipboard.writeText(text).then(() => flash('feedback-prompt'));
+        }
+
+        function flash(id) {
+            const el = document.getElementById(id);
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2000);
+        }
+    </script>
+</body>
+</html>
