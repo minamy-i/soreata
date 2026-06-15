@@ -1,3 +1,4 @@
 gitignores/
 .DS_Store
 .env
+.vercel
