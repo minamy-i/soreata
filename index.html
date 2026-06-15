@@ -260,6 +260,39 @@
             color: var(--text-dim);
         }
 
+        /* ---- チェックボックス（アコーディオンヘッダー内） ---- */
+        .accordion-check {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.55);
+            border-radius: 4px;
+            flex-shrink: 0;
+            cursor: pointer;
+            margin-right: 10px;
+            position: relative;
+        }
+
+        .accordion-check:checked {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(255, 255, 255, 0.85);
+        }
+
+        .accordion-check:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            color: var(--dark);
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .accordion-title { flex: 1; }
+
         /* ---- 非表示 ---- */
         .hidden { display: none; }
     </style>
@@ -270,7 +303,7 @@
 
         <header>
             <h1>それ！できて当たり前？</h1>
-            <p class="subtitle">みんなは簡単にやっているのに、難しくて困っていることはありませんか？<br>そんな困りごとを入力してください。一緒に考えてみましょう。<br><br>「できて当たり前」とされる行動・指示を、<br>要素と必要な能力に分解し対策を提案します。</p>
+            <p class="subtitle">あれ？何故できないんだろう？<br>その困りごと、一緒に考えてみましょう。<br>「できて当たり前」とされる行動・指示も<br>要素と必要な能力に分解し対策を提案します。</p>
         </header>
 
         <!-- STEP 1: 課題入力 -->
@@ -446,6 +479,11 @@
             }
         }
 
+        // **text** を <strong>text</strong> に変換する
+        function parseMarkdown(text) {
+            return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        }
+
         // APIの結果テキストをアコーディオンに変換して表示する
         function renderAccordion(text) {
             const container = document.getElementById('output-rendered');
@@ -465,10 +503,11 @@
                     item.className = 'accordion-item';
                     item.innerHTML = `
                         <button class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>${title}</span>
+                            <input type="checkbox" class="accordion-check" onclick="event.stopPropagation()">
+                            <span class="accordion-title">${parseMarkdown(title)}</span>
                             <span class="accordion-icon">▼</span>
                         </button>
-                        <div class="accordion-body hidden">${body.replace(/\n/g, '<br>')}</div>
+                        <div class="accordion-body hidden">${parseMarkdown(body).replace(/\n/g, '<br>')}</div>
                     `;
                     container.appendChild(item);
                 }
