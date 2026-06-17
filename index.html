@@ -14,9 +14,13 @@
             --text-dim: rgba(255, 255, 255, 0.88);
             --dark: #1a1918;
             --border: rgba(255, 255, 255, 0.18);
+            --border-strong: rgba(255, 255, 255, 0.55);
+            --bg-subtle: rgba(255, 255, 255, 0.08);
+            --color-error: #ff8080;
             --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
             --radius-card: 18px;
             --radius-btn: 24px;
+            --radius-inner: 10px;
             --max-width: 680px;
         }
 
@@ -111,7 +115,7 @@
             width: 100%;
             background: rgba(255, 255, 255, 0.07);
             border: 1.5px solid var(--border);
-            border-radius: 10px;
+            border-radius: var(--radius-inner);
             padding: 14px 16px;
             font-family: inherit;
             font-size: 0.97rem;
@@ -122,7 +126,7 @@
         }
 
         textarea::placeholder { color: rgba(255, 255, 255, 0.35); }
-        textarea:focus { border-color: rgba(255, 255, 255, 0.55); }
+        textarea:focus { border-color: var(--border-strong); }
 
         /* ---- ボタン共通 ---- */
         button {
@@ -156,12 +160,13 @@
         .btn-sub {
             background: transparent;
             color: var(--text);
-            border: 2px solid rgba(255, 255, 255, 0.55);
+            border: 2px solid var(--border-strong);
             padding: 7px 20px;
             font-size: 0.85rem;
         }
 
         .btn-sub:hover { background: rgba(255, 255, 255, 0.12); }
+        .btn-copy { margin-left: auto; font-size: 0.78rem; padding: 4px 14px; }
 
         /* ---- アクション行 ---- */
         .action-row {
@@ -189,11 +194,10 @@
         .example-btn {
             font-size: 0.78rem;
             color: var(--text-dim);
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--bg-subtle);
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 4px 12px;
-            cursor: pointer;
             transition: background 0.15s;
         }
 
@@ -208,7 +212,7 @@
         /* ---- エラー ---- */
         .error-msg {
             font-size: 0.88rem;
-            color: #ff8080;
+            color: var(--color-error);
             margin-top: 12px;
             padding: 10px 14px;
             background: rgba(255, 80, 80, 0.15);
@@ -218,7 +222,7 @@
         /* ---- アコーディオン ---- */
         .accordion-item {
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: var(--radius-inner);
             margin-bottom: 8px;
             overflow: hidden;
         }
@@ -227,7 +231,7 @@
             width: 100%;
             text-align: left;
             padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--bg-subtle);
             border: none;
             display: flex;
             justify-content: space-between;
@@ -266,7 +270,7 @@
             -webkit-appearance: none;
             width: 18px;
             height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.55);
+            border: 2px solid var(--border-strong);
             border-radius: 4px;
             flex-shrink: 0;
             cursor: pointer;
@@ -292,6 +296,49 @@
         }
 
         .accordion-title { flex: 1; }
+
+        /* ---- 当人は？エリア ---- */
+        .person-area {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-person {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            padding: 5px 16px;
+            font-size: 0.82rem;
+        }
+
+        .btn-person:hover { background: var(--bg-subtle); }
+        .btn-person:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
+
+        .person-error {
+            font-size: 0.82rem;
+            color: var(--color-error);
+            margin-left: 10px;
+        }
+
+        .child-accordion {
+            margin-top: 12px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            color: var(--text-dim);
+        }
+
+        .child-accordion-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+            margin-bottom: 8px;
+        }
 
         /* ---- 非表示 ---- */
         .hidden { display: none; }
@@ -332,6 +379,7 @@
         <div class="card hidden" id="section-rendered">
             <div class="card-title">
                 <span class="step-badge">↓</span>分解・対応の一覧
+                <button class="btn-sub btn-copy" id="btn-copy" onclick="copyResult()">コピー</button>
             </div>
             <div id="output-rendered"></div>
         </div>
@@ -448,7 +496,6 @@
             const loading = document.getElementById('loading');
             const errorMsg = document.getElementById('error-msg');
 
-            // ローディング開始
             btnDecompose.disabled = true;
             loading.classList.remove('hidden');
             errorMsg.classList.add('hidden');
@@ -488,6 +535,7 @@
         function renderAccordion(text) {
             const container = document.getElementById('output-rendered');
             container.innerHTML = '';
+            const task = document.getElementById('task-input').value.trim();
 
             const parts = text.split(/\n(?=## )/);
 
@@ -501,19 +549,88 @@
 
                     const item = document.createElement('div');
                     item.className = 'accordion-item';
+                    item.dataset.task = task;
+                    item.dataset.abilityTitle = title;
+                    item.dataset.abilityBody = body;
                     item.innerHTML = `
                         <button class="accordion-header" onclick="toggleAccordion(this)">
                             <input type="checkbox" class="accordion-check" onclick="event.stopPropagation()">
                             <span class="accordion-title">${parseMarkdown(title)}</span>
                             <span class="accordion-icon">▼</span>
                         </button>
-                        <div class="accordion-body hidden">${parseMarkdown(body).replace(/\n/g, '<br>')}</div>
+                        <div class="accordion-body hidden">
+                            <div class="ability-content">${parseMarkdown(body).replace(/\n/g, '<br>')}</div>
+                            <div class="person-area">
+                                <button class="btn-person" onclick="fetchPerson(this)">当人は？</button>
+                                <span class="person-error hidden"></span>
+                                <div class="child-accordion hidden">
+                                    <div class="child-accordion-label">当人は？</div>
+                                    <div class="child-body"></div>
+                                </div>
+                            </div>
+                        </div>
                     `;
                     container.appendChild(item);
                 }
             });
 
             document.getElementById('section-rendered').classList.remove('hidden');
+        }
+
+        // 当人は？ボタンの処理
+        async function fetchPerson(btn) {
+            const item = btn.closest('.accordion-item');
+            const { task, abilityTitle, abilityBody } = item.dataset;
+
+            btn.disabled = true;
+            btn.textContent = '取得中...';
+            const errEl = item.querySelector('.person-error');
+            errEl.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/person', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task, abilityTitle, abilityBody })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'エラーが発生しました');
+                }
+
+                item.dataset.personResult = data.result;
+                const childAccordion = item.querySelector('.child-accordion');
+                childAccordion.querySelector('.child-body').innerHTML = parseMarkdown(data.result).replace(/\n/g, '<br>');
+                childAccordion.classList.remove('hidden');
+                btn.classList.add('hidden');
+
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = '当人は？';
+                errEl.textContent = err.message;
+                errEl.classList.remove('hidden');
+            }
+        }
+
+        // 分解結果を全文コピーする
+        function copyResult() {
+            const items = document.querySelectorAll('#output-rendered .accordion-item');
+            const lines = [];
+
+            items.forEach(item => {
+                const { abilityTitle, abilityBody, personResult } = item.dataset;
+                let text = abilityTitle + '\n' + abilityBody.replace(/\*\*/g, '');
+                if (personResult) text += '\n\n当人は？\n' + personResult;
+                lines.push(text);
+            });
+
+            navigator.clipboard.writeText(lines.join('\n\n')).then(() => {
+                const btn = document.getElementById('btn-copy');
+                btn.textContent = 'コピーしました';
+                setTimeout(() => { btn.textContent = 'コピー'; }, 2000);
+            });
         }
 
         function toggleAccordion(btn) {
