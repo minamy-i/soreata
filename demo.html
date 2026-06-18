@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>それ！できて当たり前？ — デモ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet">
+    <style>
+        /* ---- デザイン変数 ---- */
+        :root {
+            --bg: #222233;
+            --text: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.60);
+            --text-dim: rgba(255, 255, 255, 0.88);
+            --dark: #1a1918;
+            --border: rgba(255, 255, 255, 0.18);
+            --border-strong: rgba(255, 255, 255, 0.55);
+            --bg-subtle: rgba(255, 255, 255, 0.08);
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+            --radius-card: 18px;
+            --radius-btn: 24px;
+            --radius-inner: 10px;
+            --max-width: 680px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            line-height: 1.75;
+            padding: 52px 20px 100px;
+        }
+
+        /* ---- 背景キャンバス ---- */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ---- ヘッダー ---- */
+        header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            font-family: 'Hachi Maru Pop', sans-serif;
+            font-size: 2.1rem;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 0.88rem;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* ---- デモバナー ---- */
+        .demo-banner {
+            background: rgba(250, 210, 0, 0.12);
+            border: 1px solid rgba(250, 210, 0, 0.35);
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.82rem;
+            color: rgba(250, 210, 0, 0.9);
+            text-align: center;
+            margin-bottom: 24px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ---- カード（すりガラス） ---- */
+        .card {
+            background: rgba(64, 64, 64, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow);
+            padding: 26px 28px;
+            margin-bottom: 20px;
+        }
+
+        /* ---- ステップバッジ ---- */
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--dark);
+            background: var(--text);
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.04em;
+            margin-bottom: 16px;
+        }
+
+        /* ---- ボタン共通 ---- */
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            border-radius: var(--radius-btn);
+            font-weight: 700;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        button:active { transform: scale(0.97); }
+
+        /* サブボタン：白枠 */
+        .btn-sub {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid var(--border-strong);
+            padding: 7px 20px;
+            font-size: 0.85rem;
+        }
+
+        .btn-sub:hover { background: rgba(255, 255, 255, 0.12); }
+        .btn-copy { margin-left: auto; font-size: 0.78rem; padding: 4px 14px; }
+
+        /* ---- アクション行 ---- */
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        /* ---- テキストエリア（読み取り専用） ---- */
+        textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-inner);
+            padding: 14px 16px;
+            font-family: inherit;
+            font-size: 0.97rem;
+            color: var(--text);
+            resize: none;
+            outline: none;
+            cursor: default;
+        }
+
+        textarea::placeholder { color: rgba(255, 255, 255, 0.35); }
+
+        /* ---- 例ボタン ---- */
+        .example-area {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .example-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .example-btn {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 12px;
+            transition: background 0.15s;
+        }
+
+        .example-btn:hover { background: rgba(255, 255, 255, 0.16); }
+
+        /* ---- アコーディオン ---- */
+        .accordion-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-inner);
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            width: 100%;
+            text-align: left;
+            padding: 14px 18px;
+            background: var(--bg-subtle);
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.93rem;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .accordion-header:hover { background: rgba(255, 255, 255, 0.14); }
+
+        .accordion-icon {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            margin-left: 12px;
+            transition: transform 0.2s;
+        }
+
+        .accordion-icon.open { transform: rotate(180deg); }
+
+        .accordion-body {
+            padding: 14px 18px;
+            font-size: 0.88rem;
+            line-height: 1.8;
+            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-dim);
+        }
+
+        /* ---- チェックボックス ---- */
+        .accordion-check {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-strong);
+            border-radius: 4px;
+            flex-shrink: 0;
+            cursor: pointer;
+            margin-right: 10px;
+            position: relative;
+        }
+
+        .accordion-check:checked {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(255, 255, 255, 0.85);
+        }
+
+        .accordion-check:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            color: var(--dark);
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .accordion-title { flex: 1; }
+
+        /* ---- 当人は？エリア ---- */
+        .person-area {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-person {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            padding: 5px 16px;
+            font-size: 0.82rem;
+        }
+
+        .btn-person:hover { background: var(--bg-subtle); }
+
+        .child-accordion {
+            margin-top: 12px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            color: var(--text-dim);
+        }
+
+        .child-accordion-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+            margin-bottom: 8px;
+        }
+
+        /* ---- 非表示 ---- */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="container">
+
+        <header>
+            <h1>それ！できて当たり前？</h1>
+            <p class="subtitle">あれ？何故できないんだろう？<br>その困りごと、一緒に考えてみましょう。<br>「できて当たり前」とされる行動・指示も<br>要素と必要な能力に分解し対策を提案します。</p>
+        </header>
+
+        <div class="demo-banner">デモ版 — APIは呼び出しません。サンプルデータを表示しています。</div>
+
+        <!-- STEP 1: デモ課題選択 -->
+        <div class="card">
+            <div class="card-title">
+                <span class="step-badge">1</span>困りごとを入力する
+            </div>
+            <textarea id="task-input" rows="4" readonly placeholder="下のデモ課題を選択してください"></textarea>
+            <div class="example-area">
+                <span class="example-label">例（クリックで入力）：</span>
+                <button class="example-btn" onclick="selectSample(this, 'tarokun')">「太郎くんのうしろに並んで」の指示がわからない</button>
+                <button class="example-btn" onclick="selectSample(this, 'hashiru')">走り回る2歳児を部屋前方の紙芝居に注目させる</button>
+                <button class="example-btn" onclick="selectSample(this, 'oodama')">「大玉送り」で相手チームの邪魔に行かないようにする</button>
+            </div>
+            <div class="action-row">
+                <button class="btn-sub" onclick="resetAll()">クリア</button>
+            </div>
+        </div>
+
+        <!-- 分解・対応の一覧 -->
+        <div class="card hidden" id="section-rendered">
+            <div class="card-title">
+                <span class="step-badge">↓</span>分解・対応の一覧
+                <button class="btn-sub btn-copy" id="btn-copy" onclick="copyResult()">コピー</button>
+            </div>
+            <div id="output-rendered"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // ---- 背景描画 ----
+        function drawBackground() {
+            const canvas = document.getElementById('bg-canvas');
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;
+            const H = canvas.height;
+
+            const colors = [
+                'rgba(230,40,40,0.70)',
+                'rgba(20,180,175,0.85)',
+                'rgba(250,210,0,0.75)',
+                'rgba(220,40,140,0.68)',
+                'rgba(40,190,80,0.68)',
+                'rgba(200,40,200,0.62)',
+                'rgba(110,60,230,0.65)',
+                'rgba(20,140,240,0.68)',
+            ];
+
+            const rand = (min, max) => Math.random() * (max - min) + min;
+            const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+            for (let i = 0; i < 180; i++) {
+                const x = rand(0, W);
+                const y = rand(0, H);
+                const color = pick(colors);
+                const shape = Math.floor(rand(0, 5));
+
+                ctx.globalAlpha = Math.min(1, y / 280);
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rand(0, Math.PI * 2));
+
+                switch (shape) {
+                    case 0:
+                        ctx.beginPath();
+                        ctx.arc(0, 0, rand(18, 48), 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.fill();
+                        break;
+                    case 1:
+                        ctx.beginPath();
+                        ctx.arc(0, 0, rand(22, 52), 0, Math.PI * 2);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = rand(4, 8);
+                        ctx.stroke();
+                        break;
+                    case 2:
+                        const ps = rand(18, 42);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = rand(5, 10);
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(-ps, 0); ctx.lineTo(ps, 0);
+                        ctx.moveTo(0, -ps); ctx.lineTo(0, ps);
+                        ctx.stroke();
+                        break;
+                    case 3:
+                        const ss = rand(18, 46);
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        for (let j = 0; j < 4; j++) {
+                            const a  = (j * Math.PI) / 2;
+                            const a1 = a - Math.PI / 4;
+                            const a2 = a + Math.PI / 4;
+                            if (j === 0) ctx.moveTo(Math.cos(a1) * ss * 0.38, Math.sin(a1) * ss * 0.38);
+                            ctx.lineTo(Math.cos(a) * ss, Math.sin(a) * ss);
+                            ctx.lineTo(Math.cos(a2) * ss * 0.38, Math.sin(a2) * ss * 0.38);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                    case 4:
+                        const ds = rand(18, 40);
+                        ctx.fillStyle = color;
+                        ctx.fillRect(-ds / 2, -ds / 2, ds, ds);
+                        break;
+                }
+
+                ctx.restore();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        drawBackground();
+        window.addEventListener('resize', drawBackground);
+
+        // ---- サンプルデータ（data/samples.json と同期） ----
+        const samplesData = [{"id":"tarokun","task":"「太郎くんのうしろに並んで」の指示がわからない","createdAt":"2026-06-19","abilities":[{"title":"相貌認知力（顔を見分ける能力）","body":"特定の人物の顔を、集団の中から瞬時に識別する力。「太郎くん」という名前と顔が一致しないと指示は成立しない。これは記憶や照合の問題であり、本人の努力不足ではない。\n対応：名札や服装など、顔以外に「太郎くんであること」が直感的にわかる手がかりを身体につける。","person":"目の前には複数の人の背中が並んでいるが、誰が誰だか判別できない。名前だけ言われても、特定の一人を指し示す情報が視界にないため、どれが太郎くんなのか判断がつかない。\n\n・誰の背後に並ぶべきか確信が持てず、列の先頭まで歩いて顔を確認しようとする。\n・誰かが声をかけてくるのを待ち、指示を出した人の視線の先や指さす方向に顔を向ける。\n・誰かわからないまま適当な列に加わり、後から人違いに気づいて慌てて列を離れる。\n・特定の目印がないため、誰が誰か特定できるまでその場に立ち尽くす。"},{"title":"他者視点の空間変換力（相手の身体を基準に位置を把握する能力）","body":"他者の背中側を「うしろ」と概念化する力。自己中心的な空間認識に留まる場合、相手にとっての「うしろ」という概念は抽象的で理解が難しい。\n対応：足跡マークやテープを床に貼り、視覚的に「ここに立つ」という正解の位置を具体化する。","person":"太郎くんの背中が見えているけれど、その場所が彼の「うしろ」だとは直感的にわかりません。空間は自分中心にしか広がっておらず、他人の視点から見た位置関係という概念が抜け落ちています。\n\n・太郎くんの目の前に立ち、顔が見える位置で待機する。\n・太郎くんの隣に並び、肩を合わせるようにして立つ。\n・太郎くんが動くと、その正面を追いかけて常に前方に回り込む。\n・みんなが並んでいる列の横に、関係なく自分ひとりで立つ。\n・混乱して、どこに立つべきかわからずその場で動けなくなる。"},{"title":"聴覚的言語処理力（聞いた言葉の意味を理解する能力）","body":"音声を言語として切り出し、意味を抽出し、行動に結びつける一連の処理。聞き取れても意味と行動が瞬時に繋がらない場合、聴覚的情報のみでは限界がある。\n対応：言葉に加えて「太郎くんを指さす」「並ぶ場所へ誘導する」など、視覚や身体感覚を併用して指示を届ける。","person":"耳に入ってくる音は、途切れることのない雑音の波として通り過ぎるだけです。「太郎くんの後ろに並んで」と言われても、言葉はバラバラの音に分解され、形を失います。\n\n・目の前の太郎くんをじっと見つめる。名前という音の記号と目の前の存在が結びつかず、ただそこにいる人として捉える。\n・床の模様を追いかけ始める。指示の意味がわからないため、視界に入った興味のある場所に移動する。\n・その場に立ちすくむ。何が求められているのか地図がないため、動くことができずフリーズする。"},{"title":"複数情報統合力（複数の条件を同時に処理する能力）","body":"「誰の後ろか」「どこに立つか」「どうやって並ぶか」という情報を統合し、逐次処理する力。一つひとつの意味がわかっても、全体像を組み立てる処理には負荷がかかる。\n対応：指示を細分化し「まずは太郎くんを見つける」「次はここ（マーク）に行く」と工程を区切り、順を追って伝える。","person":"視界には太郎くんの姿と、周りに大勢の人がいることだけがバラバラに飛び込んでくる。太郎くんの後ろという概念が、距離や位置関係として頭の中で結びつかない。\n\n・太郎くんをじっと見つめて動きを止める。後ろに回るという空間的な移動の仕方が分からない。\n・一番近くにいる人にくっついて立つ。誰の背後かという条件が消え、単に近くにいることが並ぶことだと解釈する。\n・太郎くんの目の前に立つ。太郎くんという目標物を見失わないために、視界に入る位置を選んでしまう。\n・列の最後尾を探そうとしてその場でぐるぐる回る。複数の条件が重なるとどこに向かうべきか判断がフリーズする。"},{"title":"暗黙ルール理解力（言葉にされていない約束ごとを知る能力）","body":"「並ぶ」＝「一定の距離を保ち、同じ方向を向いて静止する」という社会的慣習の理解。この前提知識がない場合、何をすることが正解なのかが見えていない。\n対応：列の先頭や並ぶ位置に印をつけ、周囲がどう並んでいるかというモデルを直接視覚的に提示する。","person":"太郎くんの背中しか見えず、後ろに何があるのか、自分の体がどこにあればいいのかがわからない。空間的な正解が示されていないため、ただ立ち尽くすか、混乱して周囲を歩き回る。\n\n・太郎くんが動くとその背中を追いかけて密着し、彼が振り向いたときに驚いてしまう。\n・指示の意味を理解しようとして、その場から動かずにただ太郎くんの顔をじっと観察し続ける。\n・並ぶという状態が視覚化されていないため、彼の横や斜め前など、その時々で自分が安定する位置に勝手に移動する。\n・列という概念が理解できず、太郎くんのすぐ後ろでくるくると回ったり、床の模様を眺めたりして時間を過ごす。"}]},{"id":"hashiru","task":"走り回る2歳児を紙芝居へ注目させる","createdAt":"2026-06-19","abilities":[{"title":"前庭覚の充足力（平衡感覚を満たしたい欲求）","body":"走ることは、脳が平衡感覚の入力を必要としている証です。静止を強いると不快感が生じるため、動きの欲求を先に満たす必要があります。\n対応：膝の上で揺らす、回転椅子でゆっくり回すなど、静止したまま前庭覚を満たせる身体的関わりを行い、落ち着きを促す。","person":"視界は横に激しく流れていく。紙芝居の絵は静止画の断片として一瞬かすめるだけで、何が描かれているのか意味を結ばない。身体がふらつき、脳が情報の欠落を訴えて激しい焦燥感を生む。ここから逃げ出し、自身の速度で世界を再構築しなければならない。\n\n・平衡感覚の情報を補うため、部屋の端から端まで全力で往復し続ける。\n・静止の強要で生じる内的な不快感を打ち消すため、わざと身体を壁にぶつけて衝撃を脳へ伝える。\n・座るように促されると重力が制御できず、身体を激しく回転させて不足した回転刺激を自ら作り出す。\n・周囲の音を遮断し、自分の足音だけを頼りに平衡を保ちながら走り回る。"},{"title":"視覚的注意の選択力（刺激の中から重要対象を選ぶ能力）","body":"空間内の多くの視覚情報から、紙芝居という一点を抽出する力です。注意が散漫なのは脳の処理の問題であり、集中力の欠如ではありません。\n対応：部屋の装飾を片付ける、照明を紙芝居に絞るなど、対象以外の刺激を減らし、紙芝居が自然と目に入る環境を作る。","person":"部屋中が情報の洪水です。壁のポスター、床の玩具、窓の外の影、紙芝居の絵がすべて同じ強さで目に飛び込み、どこを優先すべきか分かりません。私の脳には「中心」がなく、すべてが背景と前景を入れ替わり続けます。\n\n・目に映るすべての色や動くものへ反射的に目を向け、視線が落ち着きません。\n・紙芝居の絵よりも、床に落ちた光の反射の方が強く視界を占領し、そちらへ体が向かいます。\n・空間全体がノイズとして均等に入力されるため、特定の情報を選別できず、刺激の強い方へと無意識に移動を続けます。\n・視覚情報が重なりすぎて境界が消え、今何を見るべきかという優先順位が頭の中で作れません。"},{"title":"固有受容覚の調整力（筋肉や関節から身体の安心感を得る能力）","body":"筋肉の緊張を維持して静止するには、固有受容覚の入力が必要です。身体の境界が曖昧だと不安が生じ、動き回ることで安定を図ります。\n対応：重みのあるクッションを抱かせる、または膝に乗せるなど、身体に圧迫感を与えることで感覚を満たし、安心感を提供して注視を助ける。","person":"身体の境界がぼやけて、自分がどこまでなのかわからず、空中に浮いているような不安がある。紙芝居の絵よりも、自分の輪郭を確認するために動くことだけが頼りだ。\n\n・壁に自分の肩や背中を強く押し付けて、身体がここに存在していることを確認する。\n・部屋を全力で走り回り、空気の抵抗や床の衝撃を全身で受けることで、身体の輪郭を確かめる。\n・椅子や棚の角に身体をぶつけ、その痛みの圧迫感でやっと自分がそこに留まれる。\n・座っているときも足先を激しく動かして、筋肉の緊張を生み出し、身体がバラバラにならないように必死でつなぎとめる。"},{"title":"注意の持続力（関心を一点に留め続ける能力）","body":"発達段階において、興味を一つの対象に固定し続けることは未熟な状態です。これは意図的な切り替えが難しい脳の仕組みによるものです。\n対応：紙芝居を短い場面で区切り、キャラクターを動かすなど動的変化を加え、注意をリセットしながら飽きずに見られる工夫をする。","person":"視界にあるのは部屋の隅の光るボタンや床の模様で、紙芝居の絵はただの大きな紙の塊にしか見えません。先生の声は背景音に溶けて、どこに注目すべきか判別できません。\n\n・興味が次々と新しい光や動きに移るため、直前の記憶が途切れ、足が勝手に別の方角へ向かう。\n・床に落ちた小さなゴミを見つけると、それ以外の世界が消えて、ただ指先で転がすことに没頭する。\n・背後で音が鳴ると、反射的に視線がそちらに吸い寄せられ、紙芝居の存在を完全に忘れる。\n・部屋の角にある影の形が面白く見え、そこまで猛ダッシュして触り心地を確かめる。"},{"title":"社会的同調力（他者と同じ対象に関心を向ける能力）","body":"周囲の人と「注目を共有する」力です。他者の視線や関心の対象を理解することは高次な社会的認知であり、まだ学習の途上にあります。\n対応：周囲の大人が先に紙芝居に熱中し「わあ、楽しい！」と感情を共有する姿を見せ、面白いものがあるという認知を伝染させる。","person":"視界には部屋の壁や光る窓、床の模様が断片的に映るだけで、周囲の人が何を見ているかは意識に上らない。誰かが声を張り上げているが、音の発生源がどこで何に関わっているのか意味が結びつかない。\n\n・部屋の隅にある光の反射が気になり、そこへ向かって全力で走る。\n・足元の床の凹凸を指でなぞることに集中し、周囲の音を完全に遮断する。\n・部屋の反対側にあるドアの取っ手が動くのが見え、それが一番重要だと思い向かう。\n・自分の手のひらを目の前で動かし、視界を遮る影の動きを飽きずに観察し続ける。"}]},{"id":"oodama","task":"「大玉送り」で、相手チームの邪魔に行かないようにする","createdAt":"2026-06-19","abilities":[{"title":"暗黙ルール理解力（言葉にされていない約束ごとを知る能力）","body":"競争の本質を理解しても「触らない」という境界線は自明ではありません。本人の意図にかかわらず、ルールが言語化されない限り対象外の行動となります。\n対応：活動前に「玉は自分のチーム内だけで運ぶ」と具体的にルールを言語化し、壁に掲示するなど視覚的にも明示します。","person":"目の前の大玉を運ぶことが目的と理解しているため、その通りに動く。相手チームという区別はなく、目の前にある玉を押し進めることが正しい手順だと認識している。\n\n・相手チームの列に玉があるとき、効率よく運ぶために迷わず割り込んで押し続ける。\n・自分のチームの玉が止まった際、近くにある他チームの玉を勢いよくぶつけて動力を補給する。\n・相手がこちらを制止しようとしても、単なる進路妨害と捉え、隙間を縫ってさらに強く押し返す。\n・他人の領域への侵入が禁じられているという前提がなく、空いている場所があればそこに移動して玉を運び続ける。"},{"title":"競技領域の境界認識力（空間を区分して把握する能力）","body":"自陣と敵陣の空間的分断は概念的であり、視覚的な明確さがなければ領域を逸脱します。これは視覚認知の特性であり、本人の努力では制御できません。\n対応：境界線上にコーンを並べる、地面に色付きテープを貼るなど、物理的な壁や視覚的境界を強調し、空間的帰属を促します。","person":"目の前の風景は、広場全体が一つの塊として捉えられ、自分と他チームとの区別がつきません。大玉を追いかけることだけが情報の全てになり、どこまでが自分の場所かという境界線が消えています。\n\n・玉を追いかけて走っていたら、気付かないうちに相手チームの陣地へ入り込み、玉を押そうとしていた。\n・自分のチームの列だと思い並んでいたら、実は相手チームの列で、そのまま一緒に玉を運んでいた。\n・玉の動きだけを見て近づくと、自然と相手側の密集地帯に混ざり、誰もいない場所だと思って立っていた。\n・玉が向こう側に転がったので、邪魔という意識はなく、単に玉の近くへ移動し続けようとする。"},{"title":"視点転換力（相手の立場から状況を見る能力）","body":"「邪魔をしない」ためには、自分の行動が相手の進行に与える影響を他者の視点で予測せねばなりません。この推論は高度な社会的認知能力を要します。\n対応：事前に「相手チームから見るとどう見えるか」を伝え、相手の成功を応援する役割を持たせるなど、協力関係の枠組みを作ります。","person":"自分の目の前にある大玉を全力で運ぶことだけが、今の競技の全てだ。他チームがどこでどう動いているかは視界に入っておらず、ただ自分が玉を運ぶ勢いが止まることや、転がすルートを確保できないことが最大の関心事である。\n\n・玉を最短距離で転がすために、進路上にいる相手チームの選手を力任せに押しのけて道を作る。\n・自分のチームの玉を追い抜かれないよう、並走する他チームの選手の進路を塞ぎながら走る。\n・ゴールを急ぐあまり、他チームが玉を持ち上げようとしている隙間に自分の玉を強引に割り込ませる。\n・自分の玉を動かすことに夢中で、他チームの玉が転がってくる経路に自分の体を完全に重ねてしまう。"},{"title":"衝動抑制力（興奮する状況下で行動を自己調整する能力）","body":"競争の興奮状態では身体の動きが認知処理を先行します。これは脳の覚醒水準の問題であり、意志の強弱とは無関係です。\n対応：あらかじめ「玉が遠くに行っても追いかけない」という明確な境界を伝え、代わりに「自分の場所で待つ」という別の運動的役割を与えます。","person":"大玉が動くと視界がそこへ吸い込まれ、僕の体は勝手に準備を始める。ルールや指示は頭の隅で光るだけで、目の前の玉を追い越して触れるという物理的な衝動が全身を支配する。\n\n・相手チームの陣地に玉が転がり込むと、誰よりも先に飛び出して玉を弾き飛ばそうとする。\n・ゴール付近で大玉が浮いた瞬間、相手を突き飛ばしてでもその下へ滑り込み、自分で運びたくなる。\n・自分の立ち位置を忘れて玉の軌道を最短距離で追いかけ、相手チームの走路を完全に塞いでしまう。\n・玉に追いつくことだけが全てになり、笛の音も周囲の制止の声も耳に入らなくなる。"},{"title":"行動結果予測力（自分の行動が将来の結末を招くと理解する能力）","body":"「今動くと後で何が起きるか」という因果関係の理解が不足すると、目の前の玉を追う行動が優先されます。予測の欠如は思考の未熟さではなく情報処理の過程です。\n対応：邪魔をしないことで「競技全体が円滑に進む」という全体像を動画や図で示し、長期的な利点と行動を紐付けます。","person":"目の前で転がる大きな玉がただ面白く、それに触れて動かしたいという衝動だけがあります。遠くのゴールや全体のルールよりも、今ここで玉が転がる現象を追いかけることが全てです。\n\n・玉を追いかけて隣の列に飛び込み、速く動いている玉を必死に押し返す。\n・自分の列の玉が止まったとき、隣の列が邪魔に見えるので相手の玉を強引にどかす。\n・玉を転がす勢いが強すぎて、そのままコースを外れて他チームの陣地に突っ込む。\n・玉を追いかけることに集中するあまり、自分の持ち場を離れて相手チームの走路で立ち止まる。"}]}];
+
+        // ---- サンプル選択 ----
+        function selectSample(btn, id) {
+            const sample = samplesData.find(s => s.id === id);
+            if (!sample) return;
+
+            document.getElementById('task-input').value = sample.task;
+            renderAccordion(sample);
+        }
+
+        // **text** を <strong>text</strong> に変換する
+        function parseMarkdown(text) {
+            return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        }
+
+        // サンプルデータをアコーディオンに変換して表示する
+        function renderAccordion(sample) {
+            const container = document.getElementById('output-rendered');
+            container.innerHTML = '';
+
+            sample.abilities.forEach(ability => {
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                item.dataset.abilityTitle = ability.title;
+                item.dataset.abilityBody = ability.body;
+
+                const personHtml = ability.person ? `
+                    <button class="btn-person" onclick="showPerson(this)">当人は？</button>
+                    <div class="child-accordion hidden">
+                        <div class="child-accordion-label">当人は？</div>
+                        <div class="child-body">${parseMarkdown(ability.person).replace(/\n/g, '<br>')}</div>
+                    </div>
+                ` : '';
+
+                item.innerHTML = `
+                    <button class="accordion-header" onclick="toggleAccordion(this)">
+                        <input type="checkbox" class="accordion-check" onclick="event.stopPropagation()">
+                        <span class="accordion-title">${parseMarkdown(ability.title)}</span>
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div class="accordion-body hidden">
+                        <div class="ability-content">${parseMarkdown(ability.body).replace(/\n/g, '<br>')}</div>
+                        <div class="person-area">${personHtml}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            document.getElementById('section-rendered').classList.remove('hidden');
+        }
+
+        // 当人は？ボタン：保存済みデータをそのまま表示する
+        function showPerson(btn) {
+            const childAccordion = btn.nextElementSibling;
+            childAccordion.classList.remove('hidden');
+            btn.classList.add('hidden');
+        }
+
+        // 分解結果を全文コピーする
+        function copyResult() {
+            const items = document.querySelectorAll('#output-rendered .accordion-item');
+            const lines = [];
+
+            items.forEach(item => {
+                const { abilityTitle, abilityBody } = item.dataset;
+                let text = abilityTitle + '\n' + abilityBody.replace(/\*\*/g, '');
+                const childBody = item.querySelector('.child-body');
+                if (childBody && !childBody.closest('.child-accordion').classList.contains('hidden')) {
+                    text += '\n\n当人は？\n' + childBody.textContent;
+                }
+                lines.push(text);
+            });
+
+            navigator.clipboard.writeText(lines.join('\n\n')).then(() => {
+                const btn = document.getElementById('btn-copy');
+                btn.textContent = 'コピーしました';
+                setTimeout(() => { btn.textContent = 'コピー'; }, 2000);
+            });
+        }
+
+        function toggleAccordion(btn) {
+            const body = btn.nextElementSibling;
+            const icon = btn.querySelector('.accordion-icon');
+            const isOpen = !body.classList.contains('hidden');
+            body.classList.toggle('hidden');
+            icon.classList.toggle('open', !isOpen);
+        }
+
+        function resetAll() {
+            document.getElementById('task-input').value = '';
+            document.getElementById('output-rendered').innerHTML = '';
+            document.getElementById('section-rendered').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -67,10 +67,6 @@ soreata は「掘れる人の目」を掘れない人に貸す道具。
 - マークダウン記法は使わない
 - ふざけているわけでも反抗しているわけでもなく、内側では筋が通っているという事実が伝わるように書く
 
-### 質問受付
-全出し後、ユーザが自由入力で質問できる。
-AIが回答する。
-
 ## 回避事項
 - 責める表示
 - 人への推測（「あなたはここが弱い」型）
@@ -119,5 +115,7 @@ AIが回答する。
 - Vercel にデプロイ
 - `api/decompose.js`：Vercel サーバーレス関数。プロンプト組み立てと Gemini API 呼び出しを担う。
 - `api/person.js`：Vercel サーバーレス関数。「当人は？」ボタン用。プロンプト組み立てと Gemini API 呼び出しを担う。
+- `demo.html`：APIを呼び出さないデモアプリ。/demo でアクセス。サンプル課題3件を選択式で表示、自由入力不可。
+- `data/samples.json`：実出力サンプルデータ。スキーマ：[{id, task, createdAt, abilities: [{title, body, person}]}]。将来のデータ保存機能の雛形。
 - APIキーは環境変数（`GEMINI_API_KEY`）で管理。コードには書かない。
 - モデル：Gemini 3.1 Flash Lite（`gemini-3.1-flash-lite`）
