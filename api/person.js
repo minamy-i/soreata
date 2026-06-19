@@ -1,6 +1,6 @@
 // 当人は？ボタン用のプロンプトを組み立てる
 function buildPersonPrompt(task, abilityTitle, abilityBody) {
-    return `あなたは「${abilityTitle}」が働いていない前提の当事者です。
+    return `あなたは「${abilityTitle}」という状態にない当事者です。
 
 能力の説明：
 ${abilityBody}
