@@ -8,7 +8,6 @@ Gemini RPD：55/500（リセットなし）
 ## 次にやること
 
 ### 修正が必要なファイルの確認
-- api/person.js：語調の統一（常体・ですます混在）を修正する。decompose.js に合わせて常体指定を追加する
 - gitignores/promo.html：専門語・断定の見直し。新しい方針に合わせて内容を更新する（git管理外）
 - samples.json：APIで再生成（decompose・person 両方）。RPD 残量を確認してから実施する
 
