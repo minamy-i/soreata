@@ -559,7 +559,7 @@
                             <span class="accordion-icon">▼</span>
                         </button>
                         <div class="accordion-body hidden">
-                            <div class="ability-content">${parseMarkdown(body).replace(/\n/g, '<br>')}</div>
+                            <div class="ability-content">${parseMarkdown(body).replace(/\n/g, '<br>').replace(/対応：/g, '<strong>対応：</strong>')}</div>
                             <div class="person-area">
                                 <button class="btn-person" onclick="fetchPerson(this)">当人は？</button>
                                 <span class="person-error hidden"></span>
