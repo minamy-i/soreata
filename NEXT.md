@@ -1,7 +1,7 @@
 # NEXT
 
-更新：2026-06-21 9:55
-push予定：2026-06-21 10:00
+更新：2026-06-22 07:21
+push予定：2026-06-22 07:25
 
 ## RPD 残量
 2026-06-18 55/500
@@ -12,9 +12,8 @@ push予定：2026-06-21 10:00
 ## 次にやること
 
 ### samples.json の更新
-- app から出力を取って全5件を入れ直す（プロンプト変更後なので全件再取得）
-- 対象：hashiru・tarokun・oodama・daigakusei・shakaijin
-- 「当人は？」も含めてコピー
+- hashiru・tarokun・oodama・daigakusei・shakaijin の出力を取得して追加（全件出し直し）
+- oodama は戦術的な思考が出るか確認する
 
 ---
 

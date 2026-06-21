@@ -297,47 +297,15 @@
 
         .accordion-title { flex: 1; }
 
-        /* ---- 当人は？エリア ---- */
-        .person-area {
-            margin-top: 16px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        .btn-person {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid rgba(255, 255, 255, 0.35);
-            padding: 5px 16px;
-            font-size: 0.82rem;
-        }
-
-        .btn-person:hover { background: var(--bg-subtle); }
-        .btn-person:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
-
-        .person-error {
-            font-size: 0.82rem;
-            color: var(--color-error);
-            margin-left: 10px;
-        }
-
-        .child-accordion {
-            margin-top: 12px;
-            padding: 12px 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 8px;
-            font-size: 0.85rem;
-            line-height: 1.8;
-            color: var(--text-dim);
-        }
-
-        .child-accordion-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 0.04em;
-            margin-bottom: 8px;
+        /* ---- 当人は？ブロック ---- */
+        .person-line {
+            display: block;
+            background: rgba(255, 255, 255, 0.09);
+            border-radius: 6px;
+            padding: 5px 10px;
+            margin: 6px 0;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 0.86rem;
         }
 
         /* ---- 非表示 ---- */
@@ -362,10 +330,10 @@
             <div class="example-area">
                 <span class="example-label">例（クリックで入力）：</span>
                 <button class="example-btn" onclick="setExample(this)">走り回る2歳児を紙芝居へ注目させる</button>
-                <button class="example-btn" onclick="setExample(this)">「太郎くんのうしろに並んで」の指示がわからない</button>
-                <button class="example-btn" onclick="setExample(this)">「大玉送り」で、相手チームの邪魔に行かないようにする</button>
-                <button class="example-btn" onclick="setExample(this)">試験会場が講義室と違う場合があると知らなかった</button>
-                <button class="example-btn" onclick="setExample(this)">新しい仕事の手順を覚えるのに時間がかかる</button>
+                <button class="example-btn" onclick="setExample(this)">小学校低学年の子が「太郎くんのうしろに並んで」の指示がわからない</button>
+                <button class="example-btn" onclick="setExample(this)">中学生の体育祭の「大玉送り」で、相手チームの邪魔に行かないようにする</button>
+                <button class="example-btn" onclick="setExample(this)">大学での試験会場が講義室と違う場合があると知らなかった</button>
+                <button class="example-btn" onclick="setExample(this)">既に何年も勤めている会社で新しい仕事の手順を覚えるのに時間がかかる</button>
             </div>
             <div class="action-row">
                 <button class="btn-main" id="btn-decompose" onclick="decompose()">分解する</button>
@@ -515,7 +483,7 @@
                     throw new Error(data.error || 'エラーが発生しました');
                 }
 
-                renderAccordion(data.result);
+                renderAccordion(data.abilities);
 
             } catch (err) {
                 errorMsg.textContent = err.message;
@@ -526,105 +494,41 @@
             }
         }
 
-        // **text** を <strong>text</strong> に変換する
-        function parseMarkdown(text) {
-            return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        }
+        // 分解結果を保持する
+        let currentAbilities = [];
 
-        // APIの結果テキストをアコーディオンに変換して表示する
-        function renderAccordion(text) {
+        // abilities 配列をアコーディオンに変換して表示する
+        function renderAccordion(abilities) {
+            currentAbilities = abilities;
             const container = document.getElementById('output-rendered');
             container.innerHTML = '';
-            const task = document.getElementById('task-input').value.trim();
 
-            const parts = text.split(/\n(?=## )/);
-
-            parts.forEach(part => {
-                const lines = part.split('\n');
-                const first = lines[0].trim();
-
-                if (first.startsWith('## ')) {
-                    const title = first.replace('## ', '').trim();
-                    const body  = lines.slice(1).join('\n').trim();
-
-                    const item = document.createElement('div');
-                    item.className = 'accordion-item';
-                    item.dataset.task = task;
-                    item.dataset.abilityTitle = title;
-                    item.dataset.abilityBody = body;
-                    item.innerHTML = `
-                        <button class="accordion-header" onclick="toggleAccordion(this)">
-                            <input type="checkbox" class="accordion-check" onclick="event.stopPropagation()">
-                            <span class="accordion-title">${parseMarkdown(title)}</span>
-                            <span class="accordion-icon">▼</span>
-                        </button>
-                        <div class="accordion-body hidden">
-                            <div class="ability-content">${parseMarkdown(body).replace(/\n/g, '<br>').replace(/対応：/g, '<strong>対応：</strong>')}</div>
-                            <div class="person-area">
-                                <button class="btn-person" onclick="fetchPerson(this)">当人は？</button>
-                                <span class="person-error hidden"></span>
-                                <div class="child-accordion hidden">
-                                    <div class="child-accordion-label">当人は？</div>
-                                    <div class="child-body"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(item);
-                }
+            abilities.forEach(({ title, description, person, solution }) => {
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                item.innerHTML = `
+                    <button class="accordion-header" onclick="toggleAccordion(this)">
+                        <input type="checkbox" class="accordion-check" onclick="event.stopPropagation()">
+                        <span class="accordion-title">${title}</span>
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div class="accordion-body hidden">
+                        <div class="ability-description">${description.replace(/\n/g, '<br>')}</div>
+                        <span class="person-line">当人は？ ${person}</span>
+                        <div class="ability-solution"><strong>対応：</strong>${solution}</div>
+                    </div>
+                `;
+                container.appendChild(item);
             });
 
             document.getElementById('section-rendered').classList.remove('hidden');
         }
 
-        // 当人は？ボタンの処理
-        async function fetchPerson(btn) {
-            const item = btn.closest('.accordion-item');
-            const { task, abilityTitle, abilityBody } = item.dataset;
-
-            btn.disabled = true;
-            btn.textContent = '取得中...';
-            const errEl = item.querySelector('.person-error');
-            errEl.classList.add('hidden');
-
-            try {
-                const response = await fetch('/api/person', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task, abilityTitle, abilityBody })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'エラーが発生しました');
-                }
-
-                item.dataset.personResult = data.result;
-                const childAccordion = item.querySelector('.child-accordion');
-                childAccordion.querySelector('.child-body').innerHTML = parseMarkdown(data.result).replace(/\n/g, '<br>');
-                childAccordion.classList.remove('hidden');
-                btn.classList.add('hidden');
-
-            } catch (err) {
-                btn.disabled = false;
-                btn.textContent = '当人は？';
-                errEl.textContent = err.message;
-                errEl.classList.remove('hidden');
-            }
-        }
-
         // 分解結果を全文コピーする
         function copyResult() {
-            const items = document.querySelectorAll('#output-rendered .accordion-item');
-            const lines = [];
-
-            items.forEach(item => {
-                const { abilityTitle, abilityBody, personResult } = item.dataset;
-                let text = abilityTitle + '\n' + abilityBody.replace(/\*\*/g, '');
-                if (personResult) text += '\n\n当人は？\n' + personResult;
-                lines.push(text);
-            });
+            const lines = currentAbilities.map(({ title, description, person, solution }) =>
+                `${title}\n${description}\n当人は？ ${person}\n対応：${solution}`
+            );
 
             navigator.clipboard.writeText(lines.join('\n\n')).then(() => {
                 const btn = document.getElementById('btn-copy');
