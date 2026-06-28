@@ -5,3 +5,4 @@ gitignores/
 .vercel
 node_modules/
 .next/
+node_modules
