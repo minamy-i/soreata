@@ -65,7 +65,7 @@ erDiagram
         uuid person_id FK
         uuid created_id FK
         text task_text
-        json abilities
+        jsonb abilities
         timestamp created_at
     }
     MEMOS["観察記録"] {
@@ -105,3 +105,29 @@ erDiagram
     ACCOUNTS ||--o{ POSTS : "投稿（created_id）"
     ACCOUNTS ||--o{ COMMENTS : "コメント（created_id）"
 ```
+
+### abilities JSONスキーマ
+
+```json
+[
+  {
+    "title": "能力タイトル",
+    "description": "説明文",
+    "person": "当人は？（体験の記述）",
+    "solution": "対応",
+    "confirmed_at": null
+  }
+]
+```
+
+- AI分析の出力をそのまま全フィールド保存する
+- `confirmed_at`：能力確認日。未確認は `null`、確認後は `"YYYY-MM-DD"`
+- 集計が必要になったら別テーブルに移行する
+
+---
+
+### テーブル設計の方針
+- 当人テーブルは管理者の変遷履歴込みで持つ。現在の管理者は revoked_at IS NULL で取得する。
+- abilities JSONにAI分析の全フィールド（title・description・person・solution）と confirmed_at を保存する。集計が必要になったら別テーブルに移行。
+- AI分析記録は編集不可。能力確認日のみ後から更新可。
+- 状況メモ（task_memo）は持たない。観察記録で代替する。

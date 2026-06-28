@@ -2,6 +2,26 @@
 
 ---
 
+## AI分析の保存範囲
+
+日時：2026-06-28
+
+結論：AI分析の全フィールド（title・description・person・solution）をabilities JSONに保存する。
+confirmed_at（能力確認日）も同じJSONに持つ。
+
+連動：
+- `docs/data_structure.md` abilities JSONスキーマ
+- NEXT.md テーブル設計の方針
+
+不採用案：
+- タイトルのみ保存：AIの出力は毎回同じにならないため、後から再分析しても同じ結果が得られない。記録を読み返す価値を保つには全文保存が必要。
+- analysis_jsonを別カラムに持つ：RECORDSテーブルのabilitiesに統合できるため不要。
+
+※旧方針「AI分析のanalysis_jsonは保存しない。AI分析は「その場で使うもの」。」を撤回する。
+状況メモ廃止・観察記録への移行後、記録を積み重ねる設計になったため全文保存が適切と判断。
+
+---
+
 ## 年齢入力の設計方針
 
 日時：2026-06-21 20:00
