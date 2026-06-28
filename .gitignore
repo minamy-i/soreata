@@ -1,4 +1,7 @@
 gitignores/
 .DS_Store
 .env
+.env.local
 .vercel
+node_modules/
+.next/
