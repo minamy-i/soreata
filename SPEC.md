@@ -118,12 +118,13 @@ soreata は「掘れる人の目」を掘れない人に貸す道具。
 現採用モデル（Gemini 3.1 Flash Lite）は宿題提出のため。本番運用時はモデルを改めて選定する。
 
 ## 技術方針
+- フレームワーク：Next.js（App Router・TypeScript）
 - Vercel にデプロイ
 - DB：Supabase（PostgreSQL）。テーブル構成は `docs/data_structure.md` 参照。
 - 認証：Supabase Auth（Google OAuth）
-- `prompt.js`：EXAMPLESとbuildPromptを一元管理する共有ファイル。`api/decompose.js` から require で参照。`gitignores/index_AItest.html` から script タグで参照。
-- `api/decompose.js`：Vercel サーバーレス関数。プロンプト組み立てと Gemini API 呼び出しを担う。能力一覧・当人は？を一括で返す。
-- `demo.html`：APIを呼び出さないデモアプリ。/demo でアクセス。サンプル課題3件を選択式で表示、自由入力不可。
-- `data/samples.json`：実出力サンプルデータ。スキーマ：[{id, task, createdAt, abilities: [{title, description, person, solution}]}]。将来のデータ保存機能の雛形。
+- `prompt.ts`：EXAMPLESとbuildPromptを一元管理する共有モジュール。API routeから参照。
+- `app/api/decompose/route.ts`：Next.js API route。プロンプト組み立てと Gemini API 呼び出しを担う。能力一覧・当人は？を一括で返す。
+- `demo.html`：プロトタイプ用のデモ。仕様対象外。
+- `data/samples.json`：実出力サンプルデータ。スキーマ：[{id, task, createdAt, abilities: [{title, description, person, solution}]}]。
 - APIキーは環境変数（`GEMINI_API_KEY`）で管理。コードには書かない。
 - モデル：Gemini 3.1 Flash Lite（`gemini-3.1-flash-lite`）

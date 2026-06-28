@@ -8,6 +8,42 @@ push：後日改めて
 
 ## 次にやること
 
+### Next.js移行・v1実装
+
+技術方針：Next.js（App Router・TypeScript）+ Supabase
+
+#### Phase 1：プロジェクト設定
+- Next.js プロジェクト新規作成（TypeScript + App Router）
+- Supabase プロジェクト作成（外部作業・開発者が行う）
+- 環境変数設定（GEMINI_API_KEY・Supabase接続情報）
+
+#### Phase 2：AI分析機能の移植
+- `index.html` → Next.js の `/` ページ
+- `api/decompose.js` → Next.js API route
+- `prompt.js` → TypeScript モジュール
+
+#### Phase 3：認証
+- Supabase Auth（Google OAuth）設定
+- ログインボタン・UI出し分け
+- 初回ログイン後のリダイレクト
+
+#### Phase 4：DBテーブル作成
+- accounts・persons・records テーブル
+- RLS（行レベルのアクセス制御）設定
+
+#### Phase 5：当人ダッシュボード
+- アカウント設定画面
+- AI分析記録一覧
+
+#### Phase 6：保存機能
+- 「保存する」ボタン・abilities JSON保存
+- 記録詳細へのリダイレクト
+
+#### Phase 7：記録詳細
+- 能力確認日入力・削除
+
+---
+
 ### 記録機能の追加
 
 v1はSPECに記載済み。以下はv2以降の設計。
