@@ -1,112 +1,134 @@
-## 図1：ユーザー・認証系
+## v1 テーブル構成（実装済み）
+
 ```mermaid
 erDiagram
-    ユーザー・認証系
     AUTH_USERS["auth.users（Supabase管理）"] {
         uuid id PK
     }
     ACCOUNTS["アカウント"] {
-        uuid account_id PK
-        string email
-        string nickname
+        uuid id PK
+        text email
+        text nickname
+        timestamptz created_at
     }
     PERSONS["当人"] {
-        uuid person_id PK
-        uuid account_id PK
-        string relationship
-        timestamp granted_at
-        timestamp revoked_at
+        uuid id PK
+        uuid account_id FK
+        text nickname
+        timestamptz created_at
     }
-    INVITATIONS["招待"] {
-        uuid invite_id PK
+    DECOMPOSITIONS["課題（AI分析記録）"] {
+        uuid id PK
         uuid person_id FK
-        string invited_email
-        string token
-        timestamp created_at
-        timestamp accepted_at
-    }
-    COLLABORATORS["協力者"] {
-        uuid person_id PK
-        uuid account_id PK
-        string relationship
-        timestamp granted_at
-        timestamp revoked_at
+        uuid created_by FK
+        text task_text
+        jsonb abilities
+        timestamptz created_at
     }
     AUTH_USERS ||--|| ACCOUNTS : "1:1"
     ACCOUNTS ||--o{ PERSONS : ""
-    PERSONS ||--o{ INVITATIONS : ""
-    PERSONS ||--o{ COLLABORATORS : ""
-    ACCOUNTS ||--o{ COLLABORATORS : ""
-
-
+    PERSONS ||--o{ DECOMPOSITIONS : ""
+    ACCOUNTS ||--o{ DECOMPOSITIONS : "作成（created_by）"
 ```
+
+### RLS ポリシー（v1）
+
+| テーブル | ポリシー名 | 操作 | 条件 |
+|---|---|---|---|
+| accounts | accounts_select_own | SELECT | auth.uid() = id |
+| accounts | accounts_insert_own | INSERT | auth.uid() = id |
+| accounts | accounts_update_own | UPDATE | auth.uid() = id |
+| accounts | accounts_delete_own | DELETE | auth.uid() = id |
+| persons | persons_select_own | SELECT | auth.uid() = account_id |
+| persons | persons_insert_own | INSERT | auth.uid() = account_id |
+| persons | persons_update_own | UPDATE | auth.uid() = account_id |
+| persons | persons_delete_own | DELETE | auth.uid() = account_id |
+| decompositions | decompositions_select_own | SELECT | auth.uid() = created_by |
+| decompositions | decompositions_insert_own | INSERT | auth.uid() = created_by |
+| decompositions | decompositions_update_own | UPDATE | auth.uid() = created_by |
+| decompositions | decompositions_delete_own | DELETE | auth.uid() = created_by |
 
 ---
 
-## 図2：記録・コンテンツ系
+## v2 追加予定テーブル
 
 ```mermaid
 erDiagram
-    記録・コンテンツ系
     ACCOUNTS["アカウント"] {
-        uuid account_id PK
-        string email
-        string nickname
+        uuid id PK
     }
     PERSONS["当人"] {
-        uuid person_id PK
-        uuid account_id PK
+        uuid id PK
+        uuid account_id FK
         string relationship
-        timestamp granted_at
-        timestamp revoked_at
+        timestamptz granted_at
+        timestamptz revoked_at
     }
-    RECORDS["課題（AI分析記録）"] {
-        uuid record_id PK
+    INVITATIONS["招待"] {
+        uuid id PK
         uuid person_id FK
-        uuid created_id FK
-        text task_text
-        jsonb abilities
-        timestamp created_at
+        string invited_email
+        string token
+        timestamptz created_at
+        timestamptz accepted_at
+    }
+    COLLABORATORS["協力者"] {
+        uuid id PK
+        uuid person_id FK
+        uuid account_id FK
+        string relationship
+        timestamptz granted_at
+        timestamptz revoked_at
     }
     MEMOS["観察記録"] {
-        uuid memo_id PK
+        uuid id PK
         uuid person_id FK
-        uuid created_id FK
+        uuid created_by FK
         string title
         text body
-        timestamp created_at
-        timestamp updated_at
+        timestamptz created_at
+        timestamptz updated_at
     }
     POSTS["会議室投稿"] {
-        uuid post_id PK
+        uuid id PK
         uuid person_id FK
-        uuid created_id FK
+        uuid created_by FK
         text content
-        timestamp created_at
-        timestamp updated_at
-        timestamp summary_requested_at
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz summary_requested_at
         text summary_text
-        timestamp approved_at
+        timestamptz approved_at
     }
     COMMENTS["会議室コメント"] {
-        uuid comment_id PK
+        uuid id PK
         uuid post_id FK
-        uuid created_id FK
+        uuid created_by FK
         text content
-        timestamp created_at
+        timestamptz created_at
     }
-
-    RECORDS }o--|| PERSONS : ""
-    MEMOS }o--|| PERSONS : ""
-    POSTS }o--|| PERSONS : ""
+    ACCOUNTS ||--o{ INVITATIONS : ""
+    PERSONS ||--o{ INVITATIONS : ""
+    PERSONS ||--o{ COLLABORATORS : ""
+    ACCOUNTS ||--o{ COLLABORATORS : ""
+    PERSONS ||--o{ MEMOS : ""
+    PERSONS ||--o{ POSTS : ""
     POSTS ||--o{ COMMENTS : ""
-    ACCOUNTS ||--o{ RECORDS : "作成（created_id）"
-    ACCOUNTS ||--o{ MEMOS : "作成（created_id）"
-    ACCOUNTS ||--o{ POSTS : "投稿（created_id）"
-    ACCOUNTS ||--o{ COMMENTS : "コメント（created_id）"
 ```
 
-### abilities JSONスキーマ
+### v2 persons への追加カラム
+personsテーブルに以下を ALTER TABLE で追加する：
+- `relationship`：当人との関係（親・先生など）
+- `granted_at`：登録日時
+- `revoked_at`：解除日時（NULL = 現在有効）
+
+### v2 RLS ポリシー
+v2 では協力者が decompositions の confirmed_at を更新できる。
+ポリシーは v2 実装時に改めて設計する。
+
+---
+
+### abilities JSON スキーマ
 
 ```json
 [
@@ -127,7 +149,7 @@ erDiagram
 ---
 
 ### テーブル設計の方針
-- 当人テーブルは管理者の変遷履歴込みで持つ。現在の管理者は revoked_at IS NULL で取得する。
-- abilities JSONにAI分析の全フィールド（title・description・person・solution）と confirmed_at を保存する。集計が必要になったら別テーブルに移行。
+- accounts.id は auth.users.id と同じ UUID。RLS で auth.uid() = id として使う。
+- abilities JSON に AI分析の全フィールド（title・description・person・solution）と confirmed_at を保存する。集計が必要になったら別テーブルに移行。
 - AI分析記録は編集不可。能力確認日のみ後から更新可。
 - 状況メモ（task_memo）は持たない。観察記録で代替する。

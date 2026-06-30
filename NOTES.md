@@ -2,6 +2,103 @@
 
 ---
 
+## [minamy-memo] Phase 0〜4 実装フェーズの全体像
+
+日時：2026-06-30
+
+### 全体の場所と流れ
+
+| フェーズ | 作業場所 | 何をしたか |
+|---|---|---|
+| Phase 0 | Supabase サイト（手動） | アカウント登録・プロジェクト作成・APIキー取得 |
+| Phase 1 | ローカルPC | Next.js フレームワークの骨格を作った |
+| Phase 2 | ローカルPC | Supabase への接続口をコードに書いた |
+| Phase 3 | Google Cloud Console・Supabase・ローカルPC | Google ログインの仕組みを整えた |
+| Phase 4 | Supabase SQL Editor（手動） | テーブル作成・RLS設定 |
+
+### Phase 0：Supabase 事前準備（手動）
+- Supabase のサイトでアカウント登録した
+- soreata 用プロジェクトを作成した（「使うよ」宣言）
+- 発行された URL と APIキーを `.env.local` に書いた
+- Supabase は soreata のデータを置く「貸倉庫（データベース）」。自分専用の区画を借りた状態。
+- この設定は Supabase ダッシュボードにログインすれば確認できる
+
+### Phase 1：Next.js フレームワーク（ローカルPC）
+- `index.html` 1枚だったアプリを Next.js フレームワークの骨格に移した
+- Next.js はブラウザ側・サーバー側のコードを同じプロジェクトに書ける道具箱（フレームワーク）
+- `index.html` だけではログイン・DB保存・ページ遷移ができないため必要
+- ローカルPC は開発・テスト用。完成後は Vercel に自分のコードだけを置く
+- Next.js 本体はアップしない。Vercel が自前で持っている
+
+### Phase 2：Supabase 接続口（ローカルPC）
+- Supabase に繋ぐコードを 2 種類作った
+- `lib/supabase.ts`：ブラウザ側の接続口
+- `lib/supabase-server.ts`：サーバー側（Cookieでログイン状態を扱うため別が必要）
+- 接続に必要な URL・APIキーは `.env.local` から読む（コードには書かない）
+
+### Phase 3：Google ログインの仕組み（3か所またいだ）
+
+**Google Cloud Console（手動）**
+- 既存の Google アカウントでログイン（新規登録ではない）
+- soreata アプリを登録した（「このアプリは Google ログインを使います」という申請）
+- クライアントID・シークレットが発行された（soreataの証明書）
+
+**Supabase ダッシュボード（手動）**
+- クライアントID・シークレットを貼り付けた
+- 「このIDを持つアプリからのログインを信用する」という認証設定
+- DB へのアクセス権限の設定ではない（それは Phase 4 の RLS）
+
+**ローカルPC・コード（`app/auth/callback/route.ts`）**
+- Google でログイン後に soreata に戻ってくる「返事の窓口」（コールバック）
+- Google から渡された code を Supabase に渡してセッション（ログイン状態）を作る
+
+**ログインの流れ**
+ユーザーが「Googleでログイン」を押す
+→ Google のログイン画面へ
+→ ログイン成功 → callback へ
+→ Supabase がセッション（入館証）を発行
+→ soreata の画面に戻る
+
+「Googleでログイン」ボタンはまだ画面にない。仕組みの配線だけが完成した状態。
+ボタンは Phase 5 で作る。
+
+### Phase 4：DBテーブル作成（Supabase SQL Editor・手動）
+
+**用語**
+- テーブル：データを管理する表（Excelのシート1枚に相当）
+- レコード：テーブルの1件のデータ（1行）
+- カラム：データの項目（1列）
+- フィールド：1つの枠（レコードとカラムの交点）に入っているデータ
+- 値（あたい）：フィールドに入っている具体的なデータ。固定ではなく更新できる
+- SQL：データベースを操作するための言語（命令文）
+- スキーマ：テーブルをまとめるフォルダ。soreata は public スキーマを使う
+- RLS（行レベルのアクセス制御）：テーブルを作っただけでは全員のデータが誰にでも見える状態になる。RLS を設定することで「自分のデータしか見られない」にできる
+- CRUD：データベース操作の基本セット（Create=INSERT・Read=SELECT・Update=UPDATE・Delete=DELETE）
+
+**作ったテーブル**
+- accounts：ログインしたユーザーの情報（email・nickname）
+- persons：当人の情報（nickname）
+- decompositions：AI分析の結果1件分（task_text・abilities JSON・created_at）
+  ※旧称 records。「分解する（decompose）」から命名。APIルート名と統一。
+
+**テーブル作成は SQL Editor で実施**
+テーブルエディタでも作れるが、外部キー（テーブル同士のつながり）も含めて SQL で一括作成する方が確実。
+- PKはすべて `id`（UUID型）。auth.users.id と合わせる必要があるため id 以外は選択肢なし
+- 外部キーも UUID 型で統一（参照先と同じ型でないと比較できない）
+
+**RLS ポリシー：自分のデータだけ操作できる**
+- accounts：auth.uid() = id
+- persons：auth.uid() = account_id
+- decompositions：auth.uid() = created_by
+
+**設定の在り処**
+- Supabase の設定 → Supabase ダッシュボード（Authentication → Policies）
+- Google の設定 → Google Cloud Console
+- APIキー類 → .env.local
+- コード → Git にコミット済み
+
+---
+
 ## AI分析の保存範囲
 
 日時：2026-06-28
