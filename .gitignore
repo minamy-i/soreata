@@ -6,3 +6,4 @@ gitignores/
 node_modules/
 .next/
 node_modules
+tsconfig.tsbuildinfo
