@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 
-export default function AccountSettingsPage() {
+function AccountSettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isFirst = searchParams.get('first') === '1';
@@ -104,5 +104,13 @@ export default function AccountSettingsPage() {
         <button className="btn-sub" onClick={signOut}>ログアウト</button>
       </div>
     </div>
+  );
+}
+
+export default function AccountSettingsPage() {
+  return (
+    <Suspense>
+      <AccountSettingsContent />
+    </Suspense>
   );
 }
