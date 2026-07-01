@@ -1,3 +1,21 @@
+/* ---- デザイン変数 ---- */
+:root {
+  --bg: #222233;
+  --text: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.60);
+  --text-dim: rgba(255, 255, 255, 0.88);
+  --dark: #1a1918;
+  --border: rgba(255, 255, 255, 0.18);
+  --border-strong: rgba(255, 255, 255, 0.55);
+  --bg-subtle: rgba(255, 255, 255, 0.08);
+  --color-error: #ff8080;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --radius-card: 18px;
+  --radius-btn: 24px;
+  --radius-inner: 10px;
+  --max-width: 680px;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,5 +23,574 @@
 }
 
 body {
-  font-family: sans-serif;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  line-height: 1.75;
+  /* 上部はグローバルナビ（56px）＋余白 */
+  padding: 80px 20px 100px;
+}
+
+/* ---- グローバルナビ ---- */
+.global-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: rgba(34, 34, 51, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.global-nav-brand {
+  font-family: 'Hachi Maru Pop', sans-serif;
+  font-size: 1rem;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.global-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.global-nav-link {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.global-nav-link:hover {
+  color: var(--text);
+}
+
+/* ---- レイアウト ---- */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- ヘッダー ---- */
+header {
+  text-align: center;
+  margin-bottom: 52px;
+}
+
+h1 {
+  font-family: 'Hachi Maru Pop', sans-serif;
+  font-size: 2.1rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+/* ---- カード（すりガラス） ---- */
+.card {
+  background: rgba(64, 64, 64, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  padding: 26px 28px;
+  margin-bottom: 20px;
+}
+
+/* ---- ステップバッジ ---- */
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--dark);
+  background: var(--text);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+
+/* ---- テキストエリア ---- */
+textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-inner);
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 0.97rem;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+textarea:focus {
+  border-color: var(--border-strong);
+}
+
+/* ---- ボタン共通 ---- */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius-btn);
+  font-weight: 700;
+  transition: background 0.15s, transform 0.1s;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* 主要ボタン：白 */
+.btn-main {
+  background: var(--text);
+  color: var(--dark);
+  padding: 11px 30px;
+  font-size: 0.95rem;
+}
+
+.btn-main:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.btn-main:disabled {
+  background: rgba(255, 255, 255, 0.35);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* サブボタン：白枠 */
+.btn-sub {
+  background: transparent;
+  color: var(--text);
+  border: 2px solid var(--border-strong);
+  padding: 7px 20px;
+  font-size: 0.85rem;
+}
+
+.btn-sub:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.btn-copy {
+  margin-left: auto;
+  font-size: 0.78rem;
+  padding: 4px 14px;
+}
+
+.btn-save {
+  font-size: 0.78rem;
+  padding: 4px 14px;
+  margin-left: 8px;
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---- アクション行 ---- */
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* ---- 例ボタン ---- */
+.example-area {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.example-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.example-btn {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  transition: background 0.15s;
+}
+
+.example-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ---- ログイン案内 ---- */
+.login-note {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---- ローディング ---- */
+.loading {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+/* ---- エラー ---- */
+.error-msg {
+  font-size: 0.88rem;
+  color: var(--color-error);
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 80, 80, 0.15);
+  border-radius: 8px;
+}
+
+/* ---- アコーディオン ---- */
+.accordion-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.accordion-header {
+  width: 100%;
+  text-align: left;
+  padding: 14px 18px;
+  background: var(--bg-subtle);
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.accordion-header:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.accordion-square {
+  font-size: 0.9rem;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.accordion-icon {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-left: 12px;
+  transition: transform 0.2s;
+}
+
+.accordion-icon.open {
+  transform: rotate(180deg);
+}
+
+.accordion-title {
+  flex: 1;
+}
+
+.accordion-body {
+  padding: 14px 18px;
+  font-size: 0.88rem;
+  line-height: 1.8;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+}
+
+/* ---- 当人は？ブロック ---- */
+.person-line {
+  display: block;
+  background: rgba(255, 255, 255, 0.09);
+  border-radius: 6px;
+  padding: 5px 10px;
+  margin: 6px 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.86rem;
+}
+
+.ability-description {
+  margin-bottom: 4px;
+}
+
+.ability-solution {
+  margin-top: 4px;
+}
+
+/* ---- フォーム（設定画面） ---- */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+
+.form-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-inner);
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 0.97rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.form-input:focus {
+  border-color: var(--border-strong);
+}
+
+.form-value {
+  font-size: 0.97rem;
+  color: var(--text-dim);
+  padding: 4px 0;
+}
+
+/* ---- ダッシュボード：記録一覧 ---- */
+.record-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.record-item {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 16px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.record-item:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.record-date {
+  font-size: 0.80rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.record-task {
+  font-size: 0.90rem;
+  color: var(--text-dim);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.empty-note {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+/* ---- ページタイトル（ダッシュボードのnickname表示など） ---- */
+.page-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  letter-spacing: 0.03em;
+}
+
+/* ---- ダッシュボード：ナビリンク ---- */
+.nav-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---- 記録詳細 ---- */
+.record-meta-date {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.record-task-text {
+  font-size: 0.97rem;
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+
+.ability-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ability-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  padding: 12px 16px;
+  background: var(--bg-subtle);
+}
+
+.ability-row-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ability-row-title {
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.confirmed-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 24px;
+}
+
+.confirmed-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.date-input {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+/* × ボタン（未確認に戻す） */
+.btn-clear {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.btn-clear:hover {
+  color: var(--text);
+}
+
+/* 削除ボタン */
+.btn-danger {
+  background: transparent;
+  color: var(--color-error);
+  border: 2px solid var(--color-error);
+  padding: 7px 20px;
+  font-size: 0.85rem;
+  border-radius: var(--radius-btn);
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-danger:hover {
+  background: rgba(255, 80, 80, 0.12);
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.delete-confirm-msg {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+/* ---- 案内メッセージ ---- */
+.info-note {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  padding: 4px 0;
 }
