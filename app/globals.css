@@ -66,15 +66,39 @@ body {
 }
 
 .global-nav-link {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   text-decoration: none;
   font-weight: 600;
   transition: color 0.15s;
 }
 
+.nav-label-short { display: none; }
+
+@media (max-width: 599px) {
+  .global-nav-links { gap: 12px; }
+  .nav-label-full { display: none; }
+  .nav-label-short { display: inline; }
+}
+
 .global-nav-link:hover {
   color: var(--text);
+}
+
+.global-nav-link--active {
+  background: rgba(255, 255, 255, 0.90);
+  color: #222233;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.global-nav-link--active:hover {
+  color: #222233;
+}
+
+/* スマホのみ表示する改行 */
+@media (min-width: 600px) {
+  .br-sp { display: none; }
 }
 
 /* ---- レイアウト ---- */

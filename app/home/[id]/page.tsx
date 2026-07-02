@@ -37,7 +37,7 @@ export default async function DashboardPage({
       )}
 
       <div className="card">
-        <div className="card-title">AI分析の記録</div>
+        <div className="card-title">AI分解の記録</div>
         {!decompositions || decompositions.length === 0 ? (
           <p className="empty-note">分解して保存してみましょう</p>
         ) : (

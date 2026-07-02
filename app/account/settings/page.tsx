@@ -72,8 +72,6 @@ function AccountSettingsContent() {
       )}
 
       <div className="card">
-        <div className="card-title">アカウント設定</div>
-
         <div className="form-group">
           <span className="form-label">メールアドレス</span>
           <p className="form-value">{email}</p>

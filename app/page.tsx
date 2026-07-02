@@ -263,9 +263,9 @@ export default function Home() {
         <header>
           <h1>それ！できて当たり前？</h1>
           <p className="subtitle">
-            あれ？何故できないんだろう？<br />
+            あれ？何故できないんだろう？<br className="br-sp" />
             その困りごと、一緒に考えてみましょう。<br />
-            「できて当たり前」とされる行動・指示も<br />
+            「できて当たり前」とされる行動・指示も<br className="br-sp" />
             要素と必要な能力に分解し対応を提案します。
           </p>
         </header>
@@ -276,7 +276,7 @@ export default function Home() {
           </div>
           <textarea
             rows={4}
-            placeholder="行動や指示、分析に必要な年齢や特徴を書いてください。"
+            placeholder="行動や指示、分解に必要な年齢や特徴を書いてください。"
             value={task}
             onChange={e => setTask(e.target.value)}
           />

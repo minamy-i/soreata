@@ -9,7 +9,7 @@ graph TD
 
     ROOT --> LOGIN[ログイン]
     ROOT --> GEST[ゲスト]
-    GEST --> AI["AI分析  /\nゲスト：ログインボタンのみ\nログイン済み：保存するボタン"]
+    GEST --> AI["困りごとのAI分解  /\nゲスト：ログインボタンのみ\nログイン済み：保存するボタン"]
 
     AI --> LOGIN
 
@@ -22,10 +22,10 @@ graph TD
     TANTO_REG --> T_DASH["当人ダッシュボード  /home/id"]
     KYORYOKU_REG --> K_DASH["協力者ダッシュボード（URL未定）"]
 
-    T_DASH --> T_ACCOUNT["アカウント設定\nニックネーム・メアド"]
+    T_DASH --> T_TANTO_INFO["当人情報設定\npersons.nickname編集"]
+    T_TANTO_INFO --> T_INVITE["協力者招待（v2）"]
     T_DASH --> T_COL["協力者一覧"]
-    T_COL --> T_INVITE["協力者招待"]
-    T_DASH --> T_AI_REC["AI分析記録（編集不可）"]
+    T_DASH --> T_AI_REC["AI分解の記録（編集不可）"]
     T_DASH --> T_OBS["観察記録"]
     T_DASH --> T_MEET["会議室"]
     T_MEET --> T_MEET_POST["投稿・コメント"]
@@ -37,16 +37,17 @@ graph TD
     T_DASH --> AI
     T_AI_REC --> T_CONF["能力確認日\n新規入力：全員可・変更：当人のみ"]
 
-    K_DASH --> K_ACCOUNT["アカウント設定\nニックネーム・メアド"]
+    T_DASH --> ACCOUNT["アカウント設定\nニックネーム・メアド"]
+    K_DASH --> ACCOUNT
     K_DASH --> K_COL["当人一覧"]
     K_COL  --> |"同一URL・協力者権限で表示"|T_DASH
     K_DASH --> AI
 
     class ROOT,LOGIN,GEST,AI,TANTO_REG,KYORYOKU_REG all
-    class T_ACCOUNT,T_INVITE person
-    class K_DASH,K_ACCOUNT,K_COL collab
+    class T_TANTO_INFO,T_INVITE person
+    class K_DASH,K_COL collab
     class T_MEET_REQ,T_MEET_APPROVE person
-    class T_DASH,T_COL,T_AI_REC,T_OBS,T_MEET,T_CONF,T_MEET_POST,T_MEET_WRITE,T_MEET_REJECT shared
+    class T_DASH,T_COL,T_AI_REC,T_OBS,T_MEET,T_CONF,T_MEET_POST,T_MEET_WRITE,T_MEET_REJECT,ACCOUNT shared
 ```
 
 ### 凡例
@@ -62,7 +63,7 @@ graph TD
 ### URL構成
 
 **v1（当人のみ）**
-- `/`：AI分析（ゲスト含む全員）
+- `/`：困りごとのAI分解（ゲスト含む全員）
 - `/home/[id]`：当人ダッシュボード
 - `/home/[id]/record/[id]`：AI分析記録詳細
 
