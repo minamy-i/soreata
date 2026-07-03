@@ -14,10 +14,6 @@ export async function GET(request: NextRequest) {
       const userId = session.user.id;
       const email = session.user.email ?? '';
 
-      // / 始まりのパスのみ許可（オープンリダイレクト対策）
-      const rawNext = searchParams.get('next') ?? '';
-      const safeNext = rawNext.startsWith('/') ? rawNext : null;
-
       // accounts を登録（初回のみ実効・以降はスキップ）
       await supabase.from('accounts').upsert({ id: userId, email }, { onConflict: 'id' });
 
@@ -29,20 +25,13 @@ export async function GET(request: NextRequest) {
         .single();
 
       if (!person) {
-        // 初回ログイン：personsを作成してアカウント設定へ
-        const { data: newPerson } = await supabase
+        // 初回ログイン：personsを作成してアカウントダッシュボードへ
+        await supabase
           .from('persons')
-          .insert({ account_id: userId, nickname: '' })
-          .select('id')
-          .single();
-        if (newPerson) {
-          return NextResponse.redirect(`${origin}/account/settings?first=1`);
-        }
-      } else {
-        // 2回目以降：next があればそこへ、なければダッシュボードへ
-        const dest = safeNext ?? `/home/${person.id}`;
-        return NextResponse.redirect(`${origin}${dest}`);
+          .insert({ account_id: userId, nickname: '' });
       }
+
+      return NextResponse.redirect(`${origin}/account${!person ? '?first=1' : ''}`);
     }
   }
 

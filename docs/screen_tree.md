@@ -2,52 +2,49 @@
 graph TD
     classDef all fill:#ffffff,stroke:#9ca3af,color:#374151
     classDef person fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
-    classDef collab fill:#dcfce7,stroke:#22c55e,color:#14532d
+%%  classDef collab fill:#dcfce7,stroke:#22c55e,color:#14532d
     classDef shared fill:#fef3c7,stroke:#f59e0b,color:#78350f
 
     ROOT((soreata))
 
-    ROOT --> LOGIN[ログイン]
-    ROOT --> GEST[ゲスト]
-    GEST --> AI["困りごとのAI分解  /\nゲスト：ログインボタンのみ\nログイン済み：保存するボタン"]
-
+    ROOT --> LOGIN[ログイン\n/login]
+    ROOT --> AI["困りごとのAI分解\nゲスト・未ログイン\n　→ログインボタン\nログイン済\n　→保存ボタン"]
     AI --> LOGIN
 
-    LOGIN -->|"初回・招待リンクなし（システム判定）"| TANTO_REG["当人新規登録\nニックネーム入力"]
-    LOGIN -->|"2回目以降：DBのアカウント種別で自動振り分け"| T_DASH
-    LOGIN -->|"初回・招待リンク経由（システム判定）"| KYORYOKU_REG["協力者新規登録\nニックネーム入力"]
+    LOGIN -->|"初回・招待リンク経由"| KYORYOKU_REG["協力者新規登録\nニックネーム入力"]
+    LOGIN -->|"初回・招待なし"| TANTO_REG["当人新規登録\nニックネーム入力"]
+    LOGIN -->|"2回目以降"| A_DASH
 
-    LOGIN -->|"2回目以降：DBのアカウント種別で自動振り分け"| K_DASH
+    TANTO_REG --> A_DASH["アカウントダッシュボード  /account\nメアド・ニックネーム\n自分のチーム／担当チーム一覧\nログアウト・退会(v2)"]
+    KYORYOKU_REG --> A_DASH
 
-    TANTO_REG --> T_DASH["当人ダッシュボード  /home/id"]
-    KYORYOKU_REG --> K_DASH["協力者ダッシュボード（URL未定）"]
+    A_DASH -->|"チームを選択"| TEAM["チームダッシュボード  /home/[person_id]\n当人・協力者が同一URLで入る\n権限で表示・操作を切り替え"]
+    A_DASH --> AI
 
-    T_DASH --> T_TANTO_INFO["当人情報設定\npersons.nickname編集"]
-    T_TANTO_INFO --> T_INVITE["協力者招待（v2）"]
-    T_DASH --> T_COL["協力者一覧"]
-    T_DASH --> T_AI_REC["AI分解の記録（編集不可）"]
-    T_DASH --> T_OBS["観察記録"]
-    T_DASH --> T_MEET["会議室"]
-    T_MEET --> T_MEET_POST["投稿・コメント"]
-    T_MEET --> T_MEET_REQ["まとめ依頼\n→ 投稿・コメントをロック"]
-    T_MEET_REQ --> T_MEET_WRITE["まとめ記述"]
-    T_MEET_WRITE --> T_MEET_APPROVE["承諾\n→ 観察記録へ自動書き込み"]
-    T_MEET_WRITE --> T_MEET_REJECT["却下\n→ ロック解除・議論に戻る"]
-    T_MEET_REJECT --> T_MEET_POST
-    T_DASH --> AI
-    T_AI_REC --> T_CONF["能力確認日\n新規入力：全員可・変更：当人のみ"]
+    TEAM --> AI_REC["AI分解の記録"]
+    AI_REC --> RECORD["記録詳細  /home/[person_id]/record/[id]"]
+    RECORD --> CONF["能力確認日\n入力：全員可\n変更：当人のみ"]
 
-    T_DASH --> ACCOUNT["アカウント設定\nニックネーム・メアド"]
-    K_DASH --> ACCOUNT
-    K_DASH --> K_COL["当人一覧"]
-    K_COL  --> |"同一URL・協力者権限で表示"|T_DASH
-    K_DASH --> AI
+    TEAM --> OBS["観察記録  /home/[person_id]/memo\n投稿：全員・編集：作成者のみ"]
 
-    class ROOT,LOGIN,GEST,AI,TANTO_REG,KYORYOKU_REG all
-    class T_TANTO_INFO,T_INVITE person
-    class K_DASH,K_COL collab
-    class T_MEET_REQ,T_MEET_APPROVE person
-    class T_DASH,T_COL,T_AI_REC,T_OBS,T_MEET,T_CONF,T_MEET_POST,T_MEET_WRITE,T_MEET_REJECT,ACCOUNT shared
+    TEAM --> MEET["会議室  /home/[person_id]/meeting（仮）"]
+    MEET --> MEET_POST["投稿・コメント（全員）"]
+    MEET_POST --> MEET_REQ["まとめ依頼"]
+    MEET_REQ -->|"投稿・コメントロック"|MEET_WRITE["まとめ記述"]
+    MEET_WRITE --> MEET_JUD{"判定"}
+    MEET_JUD -->|"承認"|MEET_APP["観察記録へ自動書き込み"]
+    MEET_JUD -->|"投稿・コメントアンロック\n却下"|MEET_POST
+
+    TEAM --> COL["協力者一覧  /home/[person_id]/collaborators\n閲覧：全員"]
+    COL --> INVITE["協力者招待"]
+
+    TEAM --> T_SET["当人情報設定  /home/[person_id]/settings"]
+
+    TEAM --> AI
+
+    class ROOT,LOGIN,AI,TANTO_REG,KYORYOKU_REG all
+    class T_SET,INVITE,MEET_REQ,MEET_JUD person
+    class A_DASH,TEAM,AI_REC,RECORD,OBS,MEET,COL,CONF,MEET_POST,MEET_WRITE,MEET_APP shared
 ```
 
 ### 凡例
@@ -55,20 +52,21 @@ graph TD
 |---|---|
 | 白 | 全員（ゲスト含む） |
 | 薄青 | 当人のみ |
-| 薄緑 | 協力者のみ |
 | 薄黄 | 当人・協力者（ゲスト不可） |
 
 ---
 
 ### URL構成
 
-**v1（当人のみ）**
+**v1〜**
 - `/`：困りごとのAI分解（ゲスト含む全員）
-- `/home/[id]`：当人ダッシュボード
-- `/home/[id]/record/[id]`：AI分析記録詳細
+- `/login`：ログイン
+- `/account`：アカウントダッシュボード
+- `/home/[person_id]`：チームダッシュボード
+- `/home/[person_id]/record/[id]`：AI分解記録詳細
+- `/home/[person_id]/settings`：当人情報設定
 
-**v2以降**
-- `/home/[id]/memo`：観察記録タイムライン
-- `/home/[id]/meeting`：会議室（仮）
-- `/home/[id]/collaborators`：協力者一覧
-- 協力者ダッシュボード：URL未定
+**v2〜**
+- `/home/[person_id]/memo`：観察記録
+- `/home/[person_id]/meeting`：会議室（仮）
+- `/home/[person_id]/collaborators`：協力者一覧
