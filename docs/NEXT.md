@@ -1,6 +1,6 @@
 # NEXT
 
-更新：2026-07-03
+更新：2026-07-04
 push：後日改めて
 
 ## RPD 残量
@@ -8,13 +8,55 @@ push：後日改めて
 
 ## 次にやること
 
-### 要削除（v2実装時）
-- `data/collaborators_sample.ts`：協力チーム一覧のテスト用サンプルデータ。`collaborators` テーブル実装時に削除し、DBクエリに差し替える。
+### DB刷新：アカウント中心モデルへの再設計
+
+決定経緯 → `docs/NOTES.md`「DBテーブル刷新：アカウント中心モデルへの再設計」参照
+
+- [x] docs/data_structure.md：中核3テーブル（accounts・teams・team_members）書き換え済み（2026-07-04）
+- [ ] 設計：decompositions・invitations・memos・posts・comments の person_id → team_id 化
+- [ ] 設計：RLS再設計（team_members参照の無限再帰を避けるSECURITY DEFINER関数 is_team_member 等）
+- [ ] 設計：当人権限（owner）移譲の仕組み（即時切替か相手の承諾制か・実行できる場所〈v1範囲でのメンバー一覧の要否〉）
+- [ ] フェーズ1：DB刷新（Supabase SQL Editor・手動）※上記設計が確定してから着手
+  - teams, team_members テーブル作成
+  - accounts の nickname カラム削除
+  - decompositions の person_id → team_id 変更
+  - RLS ポリシー整備
+  - persons テーブル削除
+  - SQL文はClaudeが書き出す → 自分がSupabase SQL Editorで実行
+- [ ] フェーズ2：認証コールバック修正（`app/auth/callback/route.ts`）
+  - persons の自動作成を削除
+- [ ] フェーズ3：アカウントダッシュボード改修（`app/account/page.tsx`）
+  - team_members からマイチーム・協力チームを取得
+  - 「チームを作成する」ボタン追加
+  - アカウント削除ボタン追加（チーム所属ゼロの場合のみ表示）
+- [ ] フェーズ4：チーム作成フロー実装（新規ページまたはモーダル）
+  - 本人／代理の選択
+  - チーム名（当人の呼び名）・関係（relationship）の入力
+  - teams + team_members（role='owner'）の作成
+  - /home/[team_id] へ遷移
+- [ ] フェーズ5：AI分解画面の保存フロー更新（`app/page.tsx`）
+  - 未ログイン：保存ボタン非表示
+  - ログイン＋チーム0件：保存ボタン非活性・/account への誘導
+  - ログイン＋チーム1件：保存ボタン（自動的にそのチームへ保存）
+  - ログイン＋チーム複数：保存ボタン → チーム選択UI
+- [ ] フェーズ6：チームダッシュボード改修（`app/home/[id]/*`）
+  - person_id → team_id 対応
+  - team_members のアクセス制御（非メンバーを /account にリダイレクト）
+  - 当人権限者情報設定を team_members ベースに
+  - チームメンバー一覧・当人権限の移譲操作（設計確定後に反映）
+- [ ] フェーズ7：アカウント削除実装
+  - accounts 行 + Supabase Auth ユーザ削除
+  - 条件：team_members に自分の行が0件のみ
+- [ ] フェーズ8：ドキュメント更新・整理
+  - `docs/data_structure.md`：decompositions以下・RLSの改訂を反映
+  - `docs/SPEC.md`：認証・登録フロー（招待リンク有無でアカウント種別を自動判定する現行記述は「チームは明示的操作でのみ作成」という決定と矛盾するため全面書き換え）／保存フロー／チーム作成フロー／退会仕様を更新
+  - `docs/screen_tree.md`：チームメンバー一覧・チーム作成ページ・保存フロー分岐を反映
+  - `data/collaborators_sample.ts`：削除
 
 ### v2未決事項
-- 会議室のURL（`/home/[person_id]/meeting` は仮）
+- 会議室のURL（`/home/[team_id]/meeting` は仮）
 - 外部メールサービス（招待メール送信に必要）
-- 当人情報設定の内容（管理者情報など）
+- 当人権限者情報設定の内容（管理者情報など）
 - チームダッシュボードのタブ構成・名前
 
 ---

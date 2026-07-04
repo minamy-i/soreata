@@ -2,6 +2,55 @@
 
 ---
 
+## 当人・当人権限者の定義とteams・team_membersの詳細設計
+
+日時：2026-07-04
+
+結論：
+当人＝teamsの1行に対応する実在の人物。teamsは当人の情報を持つわけではなく、チーム名（「チーム太郎」）で緩く指し示すだけ。
+当人権限者＝team_membersでrole='owner'を持つアカウント。当人本人がログインして参加していれば当人と同一人物、代行者（親など）が持つ場合は別人。
+team_membersのnickname・relationshipは当人権限者（および協力者）自身の情報であり、当人本人の情報ではない。「当人情報設定」ページで編集するのも当人権限者自身の呼び名（例：親が代行するなら「太郎くんママ」）。
+role（当人権限者／協力者）とrelationship（本人・親・先生など）は別カラムに分離する。roleの値は英語（owner／collaborator）、relationshipは自由テキスト。
+当人権限者は必ず1人・空席にしない。作成者（本人 or 代行の親）が持つ。移譲は最初から作る（具体的な仕組み・即時か承諾制か・実行場所は未設計）。
+チーム名は当人の呼び名を織り込む「きまりごと」（例「チーム太郎」）。保存形式は、チーム名を含むフル文字列（「チーム太郎」）をそのまま保存する。
+
+連動：
+- `docs/data_structure.md`：teams・team_members セクションに反映済み（2026-07-04）
+- `docs/SPEC.md`：当人権限者関連の表記を反映済み（2026-07-04）
+- decompositions以下（person_id→team_id化）・RLS再設計・当人権限移譲の仕組みは次回
+
+不採用案：
+- 当人本人もteam_membersに1行持つ案（未登録時account_idをNULLにする）：NULL行を許すとRLS判定・「参加者」の意味が濁る。当人という主題はteamsが表せば足りるため採用しない。
+- teams.nameとは別にteams.subject_nameを設ける案：チーム名の命名規則（「チーム○○」）で当人を指し示せるため、専用カラムを増やす理由がない。将来当人名だけを構造化データとして持つ必要が出たら列追加で対応する。
+- 未登録の当人の代行者がteam_membersに「親としての行」と「当人としての行」を2行持つ案：当人権限者の行1つ（relationship='親'）で足りるため不要。
+
+---
+
+## DBテーブル刷新：アカウント中心モデルへの再設計
+
+日時：2026-07-03
+
+結論：personsテーブル・collaboratorsテーブル（v2計画）を廃止し、teams + team_membersに刷新する。
+accountsのnicknameカラムを削除（ニックネームはチームごとにteam_membersが持つ）。
+decompositionsのperson_idをteam_idに変更。
+「当人本人」と「当人代理（親・先生など）」の区別はteam_membersのrelationshipフィールドで表現する。
+チームは明示的な操作（「チームを作成する」ボタン）でのみ作成する。ログイン=チーム自動作成にはしない。
+
+連動：
+- `docs/data_structure.md`：テーブル定義を全面書き換え（フェーズ8で実施）
+- `docs/SPEC.md`：認証フロー・保存フロー・チーム作成フロー・アカウント削除仕様を更新（フェーズ8で実施）
+- `app/auth/callback/route.ts`：personsの自動作成を削除（フェーズ2）
+- `app/account/page.tsx`：team_membersからチーム一覧を取得に切り替え（フェーズ3）
+- `app/page.tsx`：保存フローをチーム所属状態で分岐（フェーズ5）
+- `app/home/[id]/*`：person_id → team_id（フェーズ6）
+
+不採用案：
+- persons継続案（既存のpersons + collaboratorsのまま進む）：画面設計をアカウント中心に整理したにもかかわらずDBが当人権限者中心のままだと、v2以降の機能追加でさらに設計のずれが拡大する。整理のタイミングを逃すと後になるほどコストが上がるため採用しない。
+- 当人代理を別テーブルで管理する案（personsを残しつつproxy_accountsを追加）：team_membersのrelationshipフィールドで「本人」「親」「先生」などを表現できるため、テーブルを増やす理由がない。
+- accountsにnicknameを残す案：チームによって表示名が異なる場合（チームAでは「お父さん」、チームBでは「田中」など）に対応できない。チームごとの表示名はteam_membersに持つ方が整合する。
+
+---
+
 ## プロンプト改善の方針と原則の順番
 
 日時：2026-07-01 22:02
@@ -94,7 +143,7 @@
 
 **作ったテーブル**
 - accounts：ログインしたユーザーの情報（email・nickname）
-- persons：当人の情報（nickname）
+- persons：当人権限者の情報（nickname）
 - decompositions：AI分析の結果1件分（task_text・abilities JSON・created_at）
   ※旧称 records。「分解する（decompose）」から命名。APIルート名と統一。
 
