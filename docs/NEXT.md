@@ -22,9 +22,9 @@ DB・骨格（アカウント・チーム・権限・招待の中核構造）は
 - [x] 設計：decompositions・invitations・memos・posts・comments の person_id → team_id 化（2026-07-04）
 - [x] 設計：RLS再設計（team_members参照の無限再帰を避けるSECURITY DEFINER関数 is_team_member 等）（2026-07-04）
 - [x] 設計：アカウント入口（空アカウント・/account の状況別表示）・招待フロー（メアド招待・リンク手渡し・ダッシュボード受諾）の確定（2026-07-04）
-- [ ] 設計：チーム作成の詳細（本人／代理の選び方・チーム名の入力方法・nickname/relationship の入力）
+- [x] 設計：チーム作成フローの確定（本人／代理の区別なし・常に呼び名/nickname/relationshipの3欄固定・自動でチーム名前置）（2026-07-04）
 - [ ] 設計：当人権限（owner）移譲の実装方式（即時切替か承諾制か・実行できる場所〈メンバー一覧の要否〉）※スキーマは確定済み・実装方式のみ未決
-- [ ] DB構築（Supabase SQL Editor・手動）※チーム作成の詳細が決まってから着手
+- [ ] DB構築（Supabase SQL Editor・手動）
   - accounts, teams, team_members, decompositions, invitations テーブル作成
   - accounts の nickname カラム削除
   - RLS ポリシー整備（is_team_member・is_team_owner 関数含む）
@@ -37,10 +37,10 @@ DB・骨格（アカウント・チーム・権限・招待の中核構造）は
   - 来ている招待＋「参加」ボタンの表示
   - 「チームを作成する」ボタン追加（誘導文なし）
   - アカウント削除ボタン追加（チーム所属ゼロの場合のみ表示）
-- [ ] チーム作成フロー実装（新規ページまたはモーダル）※詳細設計後
-  - 本人／代理の選択
-  - チーム名（当人（対象者）の呼び名）・関係（relationship）の入力
-  - teams + team_members（role='owner'）の作成
+  - ※アカウント共通のニックネーム表示・編集は無し（team_membersごとに持つため）
+- [ ] チーム作成フロー実装（新規ページまたはモーダル）
+  - 入力欄3つ固定：呼び名（自動で「チーム」前置→teams.name）・あなたのnickname・relationship（自由記述）
+  - teams（created_by=自分） + team_members（role='owner'）の作成
   - /home/[team_id] へ遷移
 - [ ] 招待フロー実装
   - owner がメアドを入力して招待作成（invitations へ保存・token発行）

@@ -2,6 +2,32 @@
 
 ---
 
+## invitationsは保留専用テーブル・受諾後は削除する
+
+日時：2026-07-04
+
+結論：
+invitations は「まだ受諾されていない招待」だけを持つ保留専用テーブルとする。
+受諾するとteam_membersにcollaborator行を作り、invitationsの行は削除する。
+account_id（invited_emailから引いた値・受諾者の値のどちらも）は持たない。招待履歴も残さない。
+
+きっかけは「invited_emailで検索したaccount_idをinvitationsに持たないのか」という問い。
+検討の結果、招待作成時点では相手のaccount_idを確定できない（未登録の可能性・RLSで他人のaccountsを検索できない）ことに加え、
+受諾後にinvitations行を残す設計にするとteam_membersと同じ情報（誰が・どのチームに）を二重に持つことになると分かった。
+受諾で行を削除すれば、保留中はinvitations・確定後はteam_membersと役割が完全に分かれ、重複が生じない。
+
+連動：
+- `docs/data_structure.md`：invitationsからaccepted_at列を削除・保留専用である旨を明記
+- `docs/SPEC.md`：招待フローの記述（受諾でteam_members行を作る）は元々この方針と整合しており変更不要
+- 受諾処理の実装：team_membersへのINSERTとinvitationsのDELETEを同じ操作内で行う
+
+不採用案：
+- invitationsにaccount_id（招待作成時にinvited_emailから引く）を持つ：招待作成時点でその相手が未登録の場合account_idが存在しない。RLS上も他人のaccountsを検索できないため作成時に確定できない。
+- invitationsにaccepted_by（受諾時にauth.uid()を記録）を持つ：受諾後も行を残す前提でのみ意味を持つ。行を削除する方針にしたため不要。
+- 受諾後もinvitations行を残し履歴として使う：team_membersと「誰が・どのチームに」が重複する。招待履歴を残す要件が無いため採用しない。
+
+---
+
 ## アカウント入口・招待フローの確定
 
 日時：2026-07-04

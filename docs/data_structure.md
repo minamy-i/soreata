@@ -62,7 +62,8 @@
 | created_at | timestamptz | |
 
 ### invitations
-招待の保留状態（受諾するとteam_membersに行が作られる）。RLSは検討中。
+招待の保留状態のみを持つテーブル。受諾するとteam_membersにcollaborator行を作り、invitationsの行は削除する。
+account_idは持たない（受諾者はteam_membersのaccount_idで確定するため）。招待履歴は残さない。RLSは検討中（受諾処理でのDELETEを含む）。
 | カラム | 型 | 備考 |
 |---|---|---|
 | id | uuid PK | |
@@ -70,7 +71,6 @@
 | invited_email | text | |
 | token | text | |
 | created_at | timestamptz | |
-| accepted_at | timestamptz | |
 
 ### memos（検討中）
 列はteam_id化済み。UI詳細・RLSは検討中。
