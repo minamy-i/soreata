@@ -4,13 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
-
-// teams.nameには呼び名だけを保存し（例「太郎」）、表示のたびに「チーム」を前置する。
-// 理由：当人（対象者）がowner本人の場合、チーム名とニックネームが同じ文字列になり得るため、
-// 保存段階で区別を作り込まず、表示側で常に区別する（teamDisplayName参照）。
-function teamDisplayName(callName: string) {
-  return `チーム${callName}`;
-}
+import { teamDisplayName } from '@/lib/team-display';
 
 // チーム一覧の1行（マイチーム・協力チームを1つの表で統合表示）
 // 1ユーザ1チームにつき有効な行は最大1つ（team_membersのユニーク制約）なのでteamIdだけで一意

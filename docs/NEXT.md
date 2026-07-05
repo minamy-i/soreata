@@ -63,17 +63,13 @@ DB・骨格（アカウント・チーム・権限・招待の中核構造）は
     - 受諾を通すためのRLS追加：`is_invited`関数・`teams_select_invited`・`team_members_insert_collaborator_invited`（docs/schema.sql反映済み・Supabase実行済み）
   - アカウント削除ボタン追加（チーム所属ゼロの場合のみ表示。今回は表示のみ、実処理は次の「アカウント削除実装」）
   - ※アカウント共通のニックネーム表示・編集は無し（team_membersごとに持つため）
-- [ ] 招待フロー実装（owner側の送信のみ残。受諾は上記で実装済み）
-  - owner がチーム設定でメアドを入力→サーバー側で登録済みか即時確認
-  - 未登録：その場でエラー表示、invitations行は作らない
-  - 登録済み：invitations（token無し）へ保存
-  - チーム設定に招待中一覧＋取り消しボタンを表示
-- [ ] AI分解画面の保存フロー更新（`app/page.tsx`）
+- [x] AI分解画面の保存フロー更新（`app/page.tsx`）（2026-07-05）
   - 未ログイン：保存ボタン非表示
   - 保存先候補（自分の行に空セルが無いチームのみ）を算出
   - 候補0件：保存ボタン非活性・/account への誘導
   - 候補1件：保存ボタン→確認（チーム名を明示）→保存。自動保存はしない
   - 候補複数：保存ボタン → チーム選択UI
+  - `teamDisplayName`を`lib/team-display.ts`に切り出し、`/account`と共有
 - [ ] チームページ改修（`app/home/[team_id]/*`）
   - person_id → team_id 対応
   - team_members のアクセス制御（非メンバーを /account にリダイレクト。空セルがある場合も /account へ。記録詳細・チーム設定など配下の全ページに適用）
@@ -83,6 +79,12 @@ DB・骨格（アカウント・チーム・権限・招待の中核構造）は
   - チーム設定へのリンク自体も、owner、またはWebhook管理を委譲された協力者にのみ表示する
   - 記録詳細ページ（`/home/[team_id]/record/[id]`）にWebhook投稿ボタンを追加（チームにURL設定済みの場合のみ表示。コピー機能と同じテキストをSlack/Discordへ送信）
   - 投稿済みなら「前回投稿：日時」を表示（decompositions.posted_at）。再投稿のブロック・確認ダイアログは無し。連打防止（通信中はボタン無効化）のみ実装
+- [ ] 招待フロー実装（owner側の送信のみ残。受諾は上記で実装済み）
+  - チーム設定ページ実装後に着手（送信フォームの置き場所のため）
+  - owner がチーム設定でメアドを入力→サーバー側で登録済みか即時確認
+  - 未登録：その場でエラー表示、invitations行は作らない
+  - 登録済み：invitations（token無し）へ保存
+  - チーム設定に招待中一覧＋取り消しボタンを表示
 - [ ] アカウント削除実装（条件：team_members に自分の行が0件のみ表示）
   - team_membersの行が過去も含めて一度も無い：accounts行を物理削除 + Supabase Auth ユーザ削除
   - 過去に行があった（現在0件）：accounts行の論理削除（deleted_at・email匿名化） + Supabase Auth ユーザ削除
