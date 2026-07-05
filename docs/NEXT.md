@@ -22,57 +22,74 @@ DB・骨格（アカウント・チーム・権限・招待の中核構造）は
 - [x] 設計：decompositions・invitations・memos・posts・comments の person_id → team_id 化（2026-07-04）
 - [x] 設計：RLS再設計（team_members参照の無限再帰を避けるSECURITY DEFINER関数 is_team_member 等）（2026-07-04）
 - [x] 設計：アカウント入口（空アカウント・/account の状況別表示）・招待フロー（メアド招待・リンク手渡し・ダッシュボード受諾）の確定（2026-07-04）
-- [x] 設計：チーム作成フローの確定（本人／代理の区別なし・常に呼び名/nickname/relationshipの3欄固定・自動でチーム名前置）（2026-07-04）
-- [ ] 設計：当人権限（owner）移譲の実装方式（即時切替か承諾制か・実行できる場所〈メンバー一覧の要否〉）※スキーマは確定済み・実装方式のみ未決 ←次回ここから
-- [ ] 設計：画面遷移・データ入力フローの検討（テーブル作成前に行う。漏れ・修正が出ればスキーマに反映してから着手する）
-- [ ] DB構築（Supabase SQL Editor・手動）※上記2つが済んでから着手
-  - accounts, teams, team_members, decompositions, invitations テーブル作成
+- [x] 設計：当人権限（owner）移譲の実装方式＝承諾制（招待フローと同じ保留→受諾の型）。実行場所はチーム設定ページ（2026-07-05）
+- [x] 設計：観察記録・会議室・個人間連絡はsoreataの範囲外にする。会話・記録は外部ツール（LINE・Discord・Slack等）に委ねる（2026-07-05）
+- [x] 設計：外部ツールへのWebhook投稿機能（Slack/Discord・一方通行・コピー機能のテキスト流用）。設定変更はownerまたはownerが委譲した協力者のみ（2026-07-05）
+- [x] 設計：当人権限者情報設定ページを「チーム設定」ページに改名し、外部連携設定・owner移譲指名の専用ページに変更（2026-07-05）
+- [x] 設計：チーム設定ページにチーム名編集・チーム削除を追加（RLSは`teams_update_owner`・`teams_delete_owner`で既に対応済み）。削除の詳細（確認ダイアログ等）は検討中（2026-07-05）
+- [x] 設計：チーム作成・ニックネーム/relationship入力を`/account`の「チーム一覧の表」に統合（2026-07-05決定で確定。上記2つの設計を上書き）
+  - `/account`にチーム名・自分のニックネーム・relationship列を持つ表を表示。セルは直接クリックして編集（別ページ・別フォームなし）
+  - 行に空セルがあると`/home/[team_id]`へ入れない（新規作成も招待受諾後も同じルール）
+  - チーム作成は表に空行を追加する形（呼び名・nickname・relationshipを3つとも入力して確定）。呼び名だけの別ページ・別フォームは廃止
+  - チームページ側のニックネーム表示・編集UIは不要（表示のみ、編集は`/account`へ）
+- [x] 設計：チーム削除の2パターン（協力者0人・招待0件・記録0件なら即削除／それ以外は確認ダイアログ）。即削除は`/account`のチーム一覧表からも可能（2026-07-05）
+- [x] 設計：チームページにメンバー一覧（ニックネーム・relationship・role・閲覧専用）を追加。協力者一覧ページは作らない（招待操作はチーム設定ページへ）（2026-07-05）
+- [x] 設計：保存フローは保存先候補が1件でも必ず確認を挟む（自動保存廃止）。保存先候補は自分の行に空セルが無いチームのみ（2026-07-05）
+- [x] 設計：アクセス制御を全ページ共通ルールとして明文化（未ログイン→ログイン画面→`/account`、権限なし/空セルあり→`/account`。`/home/[team_id]`配下の全ページに適用）（2026-07-05）
+- [x] 設計：招待は登録済みメアドにのみ作成可能。サーバー側（サービスロールキー）で即時確認し、未登録なら作らずその場で伝える。招待リンク（token）は廃止（2026-07-05）
+- [x] 設計：チーム設定に「招待中一覧＋取り消し」を追加（2026-07-05）
+- [x] 設計：owner移譲の保留状態は専用テーブル`ownership_transfers`（id・team_id・to_account_id・created_at）で持つ（2026-07-05）
+- [x] 設計：Webhookの列設計＝`teams.webhook_url`・`teams.webhook_platform`、委譲は`team_members.can_manage_webhook`（複数人可）（2026-07-05）
+- [x] 設計：チームダッシュボードを「チームページ」に改名。タブ構成は不要（1ページに縦並び：チーム名/ニックネーム表示・メンバー一覧・AI分解記録一覧・チーム設定への導線）（2026-07-05）
+- [ ] DB構築（Supabase SQL Editor・手動）※上記が済んでから着手
+  - accounts, teams, team_members, decompositions, invitations, ownership_transfers テーブル作成
   - accounts の nickname カラム削除
+  - team_members に can_manage_webhook（boolean）列を追加
+  - teams に webhook_url・webhook_platform 列を追加
   - RLS ポリシー整備（is_team_member・is_team_owner 関数含む）
+  - 招待作成の登録済みメアド確認処理（サービスロールキー使用・RPC等）
   - persons テーブル削除
   - SQL文はClaudeが書き出す → 自分がSupabase SQL Editorで実行
 - [ ] 認証コールバック修正（`app/auth/callback/route.ts`）
   - persons の自動作成を削除（team_members の自動作成も行わない＝空アカウントのまま）
 - [ ] アカウントダッシュボード改修（`app/account/page.tsx`）
-  - team_members からマイチーム・協力チームを取得
-  - 来ている招待＋「参加」ボタンの表示
-  - 「チームを作成する」ボタン追加（誘導文なし）
+  - チーム一覧の表（team_membersからマイチーム・協力チームを取得。列：チーム名・自分のニックネーム・relationship）
+  - セルのインライン編集（クリックしてその場で編集。別ページ・別フォームなし）
+  - 空セルがある行は`/home/[team_id]`へのリンクを無効化する
+  - 「チームを作成する」ボタン→表に空行追加→3セル入力・確定でteams（created_by=自分）+team_members（role='owner'）を同時作成
+  - 何もない行（協力者0・招待0・記録0）に軽い「削除」リンク（確認なし即削除）
+  - 来ている招待＋「参加」ボタンの表示（受諾後はチーム名のみ入った行として一覧に加わる）
   - アカウント削除ボタン追加（チーム所属ゼロの場合のみ表示）
   - ※アカウント共通のニックネーム表示・編集は無し（team_membersごとに持つため）
-- [ ] チーム作成フロー実装（新規ページまたはモーダル）
-  - 入力欄3つ固定：呼び名（自動で「チーム」前置→teams.name）・あなたのnickname・relationship（自由記述）
-  - teams（created_by=自分） + team_members（role='owner'）の作成
-  - /home/[team_id] へ遷移
 - [ ] 招待フロー実装
-  - owner がメアドを入力して招待作成（invitations へ保存・token発行）
-  - 招待リンク発行（遷移先 /login）・owner が手動で相手に渡す
-  - /account での招待表示・「参加」ボタン（受諾処理）
+  - owner がチーム設定でメアドを入力→サーバー側で登録済みか即時確認
+  - 未登録：その場でエラー表示、invitations行は作らない
+  - 登録済み：invitations（token無し）へ保存
+  - チーム設定に招待中一覧＋取り消しボタンを表示
+  - /account での招待表示・「参加」ボタン（受諾処理。nickname/relationshipはここでは入力させない）
 - [ ] AI分解画面の保存フロー更新（`app/page.tsx`）
   - 未ログイン：保存ボタン非表示
-  - ログイン＋チーム0件：保存ボタン非活性・/account への誘導
-  - ログイン＋チーム1件：保存ボタン（自動的にそのチームへ保存）
-  - ログイン＋チーム複数：保存ボタン → チーム選択UI
-- [ ] チームダッシュボード改修（`app/home/[id]/*`）
+  - 保存先候補（自分の行に空セルが無いチームのみ）を算出
+  - 候補0件：保存ボタン非活性・/account への誘導
+  - 候補1件：保存ボタン→確認（チーム名を明示）→保存。自動保存はしない
+  - 候補複数：保存ボタン → チーム選択UI
+- [ ] チームページ改修（`app/home/[team_id]/*`）
   - person_id → team_id 対応
-  - team_members のアクセス制御（非メンバーを /account にリダイレクト）
-  - 当人権限者情報設定を team_members ベースに
-  - チームメンバー一覧・当人権限（owner）の移譲操作（実装方式確定後に反映）
-- [ ] アカウント削除実装
-  - accounts 行の論理削除（deleted_at・email匿名化） + Supabase Auth ユーザ削除
-  - 条件：team_members に自分の行が0件のみ
-- [ ] ドキュメント更新・整理
-  - `docs/data_structure.md`：decompositions以下・RLSの改訂を反映
-  - `docs/SPEC.md`：「v2以降の仕様」節廃止・確定分を本体統合・検討中の明示
-  - `docs/screen_tree.md`：チームメンバー一覧・チーム作成ページ・保存フロー分岐を反映
-  - `data/collaborators_sample.ts`：削除
+  - team_members のアクセス制御（非メンバーを /account にリダイレクト。空セルがある場合も /account へ。記録詳細・チーム設定など配下の全ページに適用）
+  - チーム名・自分のニックネームの表示（読み取りのみ。編集は`/account`）
+  - メンバー一覧の表示（ニックネーム・relationship・role・閲覧専用）
+  - チーム設定ページ実装（チーム名編集・チーム削除〈2パターン〉・Webhook連携設定・当人権限移譲の指名・協力者招待）。表示はowner＝全部、Webhook管理を委譲された協力者＝連携設定のみ（他セクション非表示）
+  - チーム設定へのリンク自体も、owner、またはWebhook管理を委譲された協力者にのみ表示する
+  - 記録詳細ページ（`/home/[team_id]/record/[id]`）にWebhook投稿ボタンを追加（チームにURL設定済みの場合のみ表示。コピー機能と同じテキストをSlack/Discordへ送信）
+  - 投稿済みなら「前回投稿：日時」を表示（decompositions.posted_at）。再投稿のブロック・確認ダイアログは無し。連打防止（通信中はボタン無効化）のみ実装
+- [ ] アカウント削除実装（条件：team_members に自分の行が0件のみ表示）
+  - team_membersの行が過去も含めて一度も無い：accounts行を物理削除 + Supabase Auth ユーザ削除
+  - 過去に行があった（現在0件）：accounts行の論理削除（deleted_at・email匿名化） + Supabase Auth ユーザ削除
+- [x] `docs/screen_tree.md`：v1/v2表記の除去・現行仕様への全面更新（2026-07-05）
+- [ ] `data/collaborators_sample.ts`：削除
 
 ### 検討中（骨子外・後で決める）
-- 会議室のURL（`/home/[team_id]/meeting` は仮）
 - 外部メールサービス（招待メール自動送信。今は導入しない方針・将来検討）
-- 招待リンクの強度（有効期限・1回使い切り・メアド一致の強制範囲）
-- 当人権限者情報設定の内容（管理者情報など）
-- チームダッシュボードのタブ構成・名前
-- 観察記録・会議室のUI詳細（スキーマは確定済み）
 
 ---
 
