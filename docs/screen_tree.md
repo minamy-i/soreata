@@ -25,7 +25,7 @@ graph TD
     T_SET --> INVITE["協力者を招待する・招待中一覧＋取り消し"]
     T_SET --> TRANSFER["当人権限（owner）移譲の指名（承諾制）"]
     T_SET --> WEBHOOK["外部ツール連携設定（Slack/Discord）"]
-    T_SET --> TEAMEDIT["チーム名編集・チーム削除"]
+    T_SET --> TEAMEDIT["チーム削除"]
 
     TEAM --> AI
 
@@ -49,4 +49,4 @@ graph TD
 - `/account`：アカウントダッシュボード（チーム一覧の表・チーム作成・招待受諾）
 - `/home/[team_id]`：チームページ
 - `/home/[team_id]/record/[id]`：AI分解記録詳細
-- `/home/[team_id]/settings`：チーム設定（チーム名編集・削除・招待・owner移譲・Webhook連携）
+- `/home/[team_id]/settings`：チーム設定（削除・招待・owner移譲・Webhook連携。チーム名編集は`/account`のチーム一覧表で行う）
