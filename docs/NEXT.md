@@ -1,6 +1,6 @@
 # NEXT
 
-更新：2026-07-04
+更新：2026-07-05
 push：後日改めて
 
 ## 現在の方針
@@ -41,32 +41,33 @@ DB・骨格（アカウント・チーム・権限・招待の中核構造）は
 - [x] 設計：owner移譲の保留状態は専用テーブル`ownership_transfers`（id・team_id・to_account_id・created_at）で持つ（2026-07-05）
 - [x] 設計：Webhookの列設計＝`teams.webhook_url`・`teams.webhook_platform`、委譲は`team_members.can_manage_webhook`（複数人可）（2026-07-05）
 - [x] 設計：チームダッシュボードを「チームページ」に改名。タブ構成は不要（1ページに縦並び：チーム名/ニックネーム表示・メンバー一覧・AI分解記録一覧・チーム設定への導線）（2026-07-05）
-- [ ] DB構築（Supabase SQL Editor・手動）※上記が済んでから着手
-  - accounts, teams, team_members, decompositions, invitations, ownership_transfers テーブル作成
-  - accounts の nickname カラム削除
+- [x] DB構築（Supabase SQL Editor・手動）（2026-07-05）
+  - 旧テーブル（persons・decompositions・accounts）を全DROPしクリーン再構築（テストデータのみのため許容）
+  - accounts, teams, team_members, decompositions, invitations, ownership_transfers の6テーブルを作成
   - team_members に can_manage_webhook（boolean）列を追加
   - teams に webhook_url・webhook_platform 列を追加
-  - RLS ポリシー整備（is_team_member・is_team_owner 関数含む）
-  - 招待作成の登録済みメアド確認処理（サービスロールキー使用・RPC等）
-  - persons テーブル削除
-  - SQL文はClaudeが書き出す → 自分がSupabase SQL Editorで実行
-- [ ] 認証コールバック修正（`app/auth/callback/route.ts`）
-  - persons の自動作成を削除（team_members の自動作成も行わない＝空アカウントのまま）
-- [ ] アカウントダッシュボード改修（`app/account/page.tsx`）
-  - チーム一覧の表（team_membersからマイチーム・協力チームを取得。列：チーム名・自分のニックネーム・relationship）
+  - RLS ポリシー20個・is_team_member/is_team_owner関数を作成、Supabase側で件数確認済み
+  - SQL文一式は `docs/schema.sql` に保存（再現性・今後の変更起点）
+  - 未実施：招待作成の登録済みメアド確認処理（サービスロールキー使用・RPC等）→ 招待フロー実装タスクで対応
+- [x] 認証コールバック修正（`app/auth/callback/route.ts`）
+  - persons の自動作成を削除（team_members の自動作成も行わない＝空アカウントのまま）（2026-07-05）
+- [x] アカウントダッシュボード改修（`app/account/page.tsx`）（2026-07-05）
+  - チーム一覧の表（team_membersからマイチーム・協力チームを取得。列：チーム名・自分のニックネーム・関係）
   - セルのインライン編集（クリックしてその場で編集。別ページ・別フォームなし）
   - 空セルがある行は`/home/[team_id]`へのリンクを無効化する
   - 「チームを作成する」ボタン→表に空行追加→3セル入力・確定でteams（created_by=自分）+team_members（role='owner'）を同時作成
-  - 何もない行（協力者0・招待0・記録0）に軽い「削除」リンク（確認なし即削除）
-  - 来ている招待＋「参加」ボタンの表示（受諾後はチーム名のみ入った行として一覧に加わる）
-  - アカウント削除ボタン追加（チーム所属ゼロの場合のみ表示）
+    - RPC関数`create_team_with_owner`を新設（teams作成直後の読み返し不可問題・孤立チームリスクを同時に解消。docs/NOTES.md参照）
+    - teams.nameは呼び名のみ保存し、「チーム」前置は表示側（`teamDisplayName`）で行う方式に変更（docs/NOTES.md参照）
+  - 何もない行（協力者0・招待0・記録0）に軽い「削除」リンクを表示（今回は表示のみ。実処理は次の「チーム削除実装」）
+  - 来ている招待＋「参加」ボタン：受諾処理まで実装（team_members作成→invitations削除）
+    - 受諾を通すためのRLS追加：`is_invited`関数・`teams_select_invited`・`team_members_insert_collaborator_invited`（docs/schema.sql反映済み・Supabase実行済み）
+  - アカウント削除ボタン追加（チーム所属ゼロの場合のみ表示。今回は表示のみ、実処理は次の「アカウント削除実装」）
   - ※アカウント共通のニックネーム表示・編集は無し（team_membersごとに持つため）
-- [ ] 招待フロー実装
+- [ ] 招待フロー実装（owner側の送信のみ残。受諾は上記で実装済み）
   - owner がチーム設定でメアドを入力→サーバー側で登録済みか即時確認
   - 未登録：その場でエラー表示、invitations行は作らない
   - 登録済み：invitations（token無し）へ保存
   - チーム設定に招待中一覧＋取り消しボタンを表示
-  - /account での招待表示・「参加」ボタン（受諾処理。nickname/relationshipはここでは入力させない）
 - [ ] AI分解画面の保存フロー更新（`app/page.tsx`）
   - 未ログイン：保存ボタン非表示
   - 保存先候補（自分の行に空セルが無いチームのみ）を算出

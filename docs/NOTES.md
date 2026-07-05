@@ -2,6 +2,45 @@
 
 ---
 
+## teams.nameは「呼び名のみ」を保存する方式に変更（「チーム」前置は表示側で行う）
+
+日時：2026-07-05
+
+結論：
+- `teams.name`には呼び名だけを保存する（例「太郎」）。以前の決定（フル文字列「チーム太郎」をそのまま保存する）を見直した
+- 画面に表示する場所（`/account`のチーム一覧表・招待の表示など、今後はチームページ・保存確認ダイアログ・Webhook投稿文言も含む）では、表示するたびに「チーム」を前置する（`teamDisplayName`関数）
+- チーム名の編集（`/account`の鉛筆マーク）も、呼び名だけを直接書き換える形になった
+
+連動：
+- `docs/data_structure.md`：teams.nameの説明を「呼び名のみ保存」に修正
+- `docs/SPEC.md`：チーム作成フロー138行目の記述を「保存は呼び名のみ・表示時に前置」に修正
+- `app/account/page.tsx`：`teamDisplayName`関数を追加し、チーム名表示・招待表示の全箇所で使用。`teamName`という変数名は`teamCallName`（呼び名）に改名
+- 旧方式（フル文字列保存）で作成済みのテストデータは、`teams.name`から先頭の「チーム」を取り除くSQLを1回流して移行する必要がある
+
+きっかけ：チーム名編集（鉛筆マーク）を自由入力のままにする案（単純さ優先）を検討していたところ、「当人（対象者）自身がowner本人の場合、チーム名とニックネームが同じ文字列（例：どちらも「太郎」）になり得て、チームメンバーの会話の中で人の話かチームの話か区別できなくなる」という具体的な問題が指摘された。編集時だけ「チーム」を保護する案（入力欄で呼び名部分だけを見せ、保存時に前置し直す）も検討したが、保存自体を呼び名のみにして表示側で一律に前置する方が、編集・作成・表示のロジックが1本化されてシンプルになるため、こちらを採用した。
+
+不採用案：
+- 編集時のみ「チーム」を保護する案（保存はフル文字列のまま、鉛筆マークを押したときだけ先頭の「チーム」を取り除いて見せ、保存時に前置し直す）：実装可能だが、保存形式（フル文字列）と表示形式（呼び名のみ切り出し）が食い違い、判定ロジックが編集開始・保存の2箇所に必要になる。呼び名のみ保存に統一する方が単純
+
+## チーム作成をRPC関数（create_team_with_owner）に統合。招待受諾用RLSも追加
+
+日時：2026-07-05
+
+結論：
+- 招待受諾（協力者が自分でteam_membersに入る）を通すため、RLSに`is_invited`関数・`teams_select_invited`・`team_members_insert_collaborator_invited`を追加した
+- チーム作成（teams＋team_members(owner)の2行作成）は、クライアント側で2回INSERTする方式をやめ、`create_team_with_owner`というSECURITY DEFINER関数（RPC）1回にまとめた
+
+連動：
+- `docs/schema.sql`：is_invited関数・teams_select_invited・team_members_insert_collaborator_invited・create_team_with_owner関数を追加
+- `docs/data_structure.md`：RLS一覧・SECURITY DEFINER関数一覧・RPC関数の項目を追加
+- `app/account/page.tsx`：チーム作成処理を`supabase.rpc('create_team_with_owner', ...)`呼び出し1回に変更
+- `teams_insert_own`・`team_members_insert_owner_or_self`の作成時例外条件は、通常経路（アプリのチーム作成ボタン）では使われなくなった。将来直接INSERTする経路ができた場合の保険として残す
+
+きっかけ：チーム作成の実装中、teams作成直後に`.select().single()`で読み返そうとしたところ0件エラーになった。原因は、teamsのSELECTポリシー（is_team_member／is_invited）がどちらも「作成直後・team_members未作成」の時点では偽になり、作った本人が自分のteams行を読み返せないため。2回INSERTに分ける方式のまま直すなら「作成者はteam_members未作成でも読める」という一時的なSELECTポリシーを足す案（A案）もあったが、それとは別に「1回目成功・2回目失敗で孤立チームが残る」リスクも未解決だったため、両方を一度に解消できるRPC関数化（B案）を採用した。
+
+不採用案：
+- A案（teams_select_own_createdのような一時許可SELECTポリシーを追加）：読み返し問題は解けるが、孤立チームのリスクは残る。RLSに「作成直後だけ通る」という条件を増やす分、ルールの見通しも悪化する
+
 ## Webhookの列設計を確定。チームダッシュボードを「チームページ」に改名、タブ構成は不要と確定
 
 日時：2026-07-05

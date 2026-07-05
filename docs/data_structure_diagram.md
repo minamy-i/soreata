@@ -19,7 +19,7 @@ erDiagram
 
     teams {
         uuid id PK
-        text name "例：チーム太郎"
+        text name "呼び名のみ・例：太郎（表示時に「チーム」前置）"
         uuid created_by FK "accounts.id"
         timestamptz created_at
         text webhook_url "外部ツール投稿先URL・NULL可"

@@ -612,6 +612,102 @@ button:active {
   margin-bottom: 14px;
 }
 
+/* ---- チーム一覧の表（/account） ---- */
+.team-table-wrap {
+  overflow-x: auto;
+}
+
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.team-table th {
+  text-align: left;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--dark);
+  background: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.04em;
+  padding: 6px 8px;
+  white-space: nowrap;
+}
+
+.team-table th:first-child {
+  border-radius: var(--radius-inner) 0 0 var(--radius-inner);
+}
+
+.team-table th:last-child {
+  border-radius: 0 var(--radius-inner) var(--radius-inner) 0;
+}
+
+.team-table td {
+  padding: 8px;
+  border-top: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.team-cell-value {
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.team-cell-empty {
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+  cursor: pointer;
+}
+
+.team-cell-input {
+  width: 100%;
+  min-width: 90px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-inner);
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--text);
+  outline: none;
+}
+
+.team-cell-with-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-name-link {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.team-name-disabled {
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+}
+
+.team-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.team-delete-link {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.team-delete-link:hover {
+  color: var(--color-error);
+}
+
 /* ---- 案内メッセージ ---- */
 .info-note {
   font-size: 0.88rem;
