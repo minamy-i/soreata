@@ -13,10 +13,12 @@ type Decomp = {
 };
 
 export default function RecordDetail({
-  personId,
+  teamId,
+  canDelete,
   decomp,
 }: {
-  personId: string;
+  teamId: string;
+  canDelete: boolean;
   decomp: Decomp;
 }) {
   const router = useRouter();
@@ -62,7 +64,7 @@ export default function RecordDetail({
       setError('削除に失敗しました');
       setDeleting(false);
     } else {
-      router.push(`/home/${personId}`);
+      router.push(`/home/${teamId}`);
     }
   }
 
@@ -121,25 +123,27 @@ export default function RecordDetail({
         {error && <div className="error-msg">{error}</div>}
       </div>
 
-      <div className="card">
-        {!confirmDelete ? (
-          <button className="btn-danger" onClick={() => setConfirmDelete(true)}>
-            この記録を削除する
-          </button>
-        ) : (
-          <div className="delete-confirm">
-            <p className="delete-confirm-msg">本当に削除しますか？この操作は取り消せません。</p>
-            <div className="action-row">
-              <button className="btn-danger" onClick={deleteRecord} disabled={deleting}>
-                {deleting ? '削除中...' : '削除する'}
-              </button>
-              <button className="btn-sub" onClick={() => setConfirmDelete(false)}>
-                キャンセル
-              </button>
+      {canDelete && (
+        <div className="card">
+          {!confirmDelete ? (
+            <button className="btn-danger" onClick={() => setConfirmDelete(true)}>
+              この記録を削除する
+            </button>
+          ) : (
+            <div className="delete-confirm">
+              <p className="delete-confirm-msg">本当に削除しますか？この操作は取り消せません。</p>
+              <div className="action-row">
+                <button className="btn-danger" onClick={deleteRecord} disabled={deleting}>
+                  {deleting ? '削除中...' : '削除する'}
+                </button>
+                <button className="btn-sub" onClick={() => setConfirmDelete(false)}>
+                  キャンセル
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

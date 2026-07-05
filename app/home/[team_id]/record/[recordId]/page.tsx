@@ -13,37 +13,41 @@ export type Ability = {
 export default async function RecordPage({
   params,
 }: {
-  params: Promise<{ id: string; recordId: string }>;
+  params: Promise<{ team_id: string; recordId: string }>;
 }) {
-  const { id, recordId } = await params;
+  const { team_id, recordId } = await params;
   const supabase = await createSupabaseServer();
   const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session) redirect(`/login?next=/home/${id}/record/${recordId}`);
+  if (!session) redirect(`/login?next=/home/${team_id}/record/${recordId}`);
 
-  // 自分のpersonsレコードか確認
-  const { data: person } = await supabase
-    .from('persons')
-    .select('id')
-    .eq('id', id)
+  // 自分の所属確認（非メンバー・空セルが残っている場合は/accountへ）
+  const { data: myMembership } = await supabase
+    .from('team_members')
+    .select('nickname, relationship, role')
+    .eq('team_id', team_id)
     .eq('account_id', session.user.id)
+    .is('revoked_at', null)
     .single();
 
-  if (!person) redirect('/');
+  if (!myMembership || !myMembership.nickname || !myMembership.relationship) {
+    redirect('/account');
+  }
 
   // AI分析記録の取得
   const { data: decomp } = await supabase
     .from('decompositions')
     .select('id, task_text, abilities, created_at')
     .eq('id', recordId)
-    .eq('person_id', id)
+    .eq('team_id', team_id)
     .single();
 
-  if (!decomp) redirect(`/home/${id}`);
+  if (!decomp) redirect(`/home/${team_id}`);
 
   return (
     <RecordDetail
-      personId={id}
+      teamId={team_id}
+      canDelete={myMembership.role === 'owner'}
       decomp={{
         id: decomp.id,
         task_text: decomp.task_text,
