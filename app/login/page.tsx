@@ -12,19 +12,9 @@ function LoginContent() {
   // ログイン済みなら遷移先へ
   useEffect(() => {
     const supabase = createSupabaseBrowser();
-    supabase.auth.getSession().then(async ({ data }) => {
+    supabase.auth.getSession().then(({ data }) => {
       if (!data.session) return;
-      if (next) {
-        router.push(next);
-        return;
-      }
-      const { data: person } = await supabase
-        .from('persons')
-        .select('id')
-        .eq('account_id', data.session.user.id)
-        .single();
-      if (person) router.push(`/home/${person.id}`);
-      else router.push('/');
+      router.push(next || '/account');
     });
   }, [router, next]);
 
