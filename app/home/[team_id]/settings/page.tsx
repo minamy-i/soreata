@@ -1,93 +1,54 @@
-'use client';
+import { createSupabaseServer } from "@/lib/supabase-server";
+import { redirect } from "next/navigation";
+import { isTeamEmpty } from "@/lib/team-empty";
+import SettingsForm from "./SettingsForm";
 
-import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createSupabaseBrowser } from '@/lib/supabase-browser';
-
-export default function PersonSettingsPage({
+export default async function TeamSettingsPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ team_id: string }>;
 }) {
-  const { id } = use(params);
-  const router = useRouter();
-  const [nickname, setNickname] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState('');
+  const { team_id } = await params;
+  const supabase = await createSupabaseServer();
+  const { data: { session } } = await supabase.auth.getSession();
 
-  useEffect(() => {
-    const supabase = createSupabaseBrowser();
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) {
-        router.push('/');
-        return;
-      }
+  if (!session) redirect(`/login?next=/home/${team_id}/settings`);
 
-      // 自分のpersonsレコードか確認
-      const { data: person } = await supabase
-        .from('persons')
-        .select('nickname')
-        .eq('id', id)
-        .eq('account_id', data.session.user.id)
-        .single();
+  // 自分の所属確認（当人権限者、またはWebhook管理を委譲された協力者のみ入れる）
+  const { data: myMembership } = await supabase
+    .from('team_members')
+    .select('role, can_manage_webhook')
+    .eq('team_id', team_id)
+    .eq('account_id', session.user.id)
+    .is('revoked_at', null)
+    .single();
 
-      if (!person) {
-        router.push('/');
-        return;
-      }
-      setNickname(person.nickname ?? '');
-    });
-  }, [router, id]);
+  const isOwner = myMembership?.role === 'owner';
+  const canManageWebhook = isOwner || myMembership?.can_manage_webhook === true;
 
-  async function save() {
-    setSaving(true);
-    setError('');
-    try {
-      const supabase = createSupabaseBrowser();
-      const { error: updateError } = await supabase
-        .from('persons')
-        .update({ nickname })
-        .eq('id', id);
-      if (updateError) throw updateError;
-
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : '保存に失敗しました');
-    } finally {
-      setSaving(false);
-    }
+  if (!myMembership || !canManageWebhook) {
+    redirect(`/home/${team_id}`);
   }
 
+  const { data: team } = await supabase
+    .from('teams')
+    .select('name, webhook_url, webhook_platform')
+    .eq('id', team_id)
+    .single();
+
+  if (!team) redirect('/account');
+
+  // チーム削除セクションの表示切り替え（owner限定機能。空チームのみ即削除できる）
+  const isEmpty = isOwner ? await isTeamEmpty(supabase, team_id) : false;
+
   return (
-    <div className="container">
-      <div className="card">
-        <div className="card-title">当人情報設定</div>
-
-        <div className="form-group">
-          <label className="form-label" htmlFor="nickname">当人のニックネーム</label>
-          <input
-            id="nickname"
-            type="text"
-            className="form-input"
-            value={nickname}
-            onChange={e => setNickname(e.target.value)}
-            placeholder="当人のニックネームを入力してください"
-          />
-        </div>
-
-        {error && <div className="error-msg">{error}</div>}
-
-        <div className="action-row">
-          <button className="btn-main" onClick={save} disabled={saving}>
-            {saved ? '保存しました' : saving ? '保存中...' : '保存する'}
-          </button>
-          <button className="btn-sub" onClick={() => router.push(`/home/${id}`)}>
-            戻る
-          </button>
-        </div>
-      </div>
-    </div>
+    <SettingsForm
+      teamId={team_id}
+      teamCallName={team.name}
+      webhookUrl={team.webhook_url}
+      webhookPlatform={team.webhook_platform}
+      isOwner={isOwner}
+      isEmpty={isEmpty}
+    />
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { teamDisplayName } from '@/lib/team-display';
+import { isTeamEmpty } from '@/lib/team-empty';
 
 // チーム一覧の1行（マイチーム・協力チームを1つの表で統合表示）
 // 1ユーザ1チームにつき有効な行は最大1つ（team_membersのユニーク制約）なのでteamIdだけで一意
@@ -54,6 +55,9 @@ export default function AccountPage() {
 
   // 招待の参加処理中フラグ（連打防止）
   const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  // チーム削除処理中フラグ（連打防止）
+  const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createSupabaseBrowser();
@@ -107,29 +111,10 @@ export default function AccountPage() {
       const ownerRows = teamRows.filter((r) => r.role === 'owner');
       if (ownerRows.length > 0) {
         const deletability = await Promise.all(
-          ownerRows.map(async (row) => {
-            const [collaborators, teamInvitations, records] = await Promise.all([
-              supabase
-                .from('team_members')
-                .select('id', { count: 'exact', head: true })
-                .eq('team_id', row.teamId)
-                .eq('role', 'collaborator')
-                .is('revoked_at', null),
-              supabase
-                .from('invitations')
-                .select('id', { count: 'exact', head: true })
-                .eq('team_id', row.teamId),
-              supabase
-                .from('decompositions')
-                .select('id', { count: 'exact', head: true })
-                .eq('team_id', row.teamId),
-            ]);
-            const isDeletable =
-              (collaborators.count ?? 0) === 0 &&
-              (teamInvitations.count ?? 0) === 0 &&
-              (records.count ?? 0) === 0;
-            return { teamId: row.teamId, isDeletable };
-          })
+          ownerRows.map(async (row) => ({
+            teamId: row.teamId,
+            isDeletable: await isTeamEmpty(supabase, row.teamId),
+          }))
         );
         setRows((rs) =>
           rs.map((r) => {
@@ -256,6 +241,21 @@ export default function AccountPage() {
     } finally {
       setJoiningId(null);
     }
+  }
+
+  // 空チームの即削除（確認ダイアログなし。isDeletable行のみボタンが出るため空チーム前提）
+  async function deleteTeam(teamId: string) {
+    setDeletingTeamId(teamId);
+    setError('');
+    const supabase = createSupabaseBrowser();
+    const { error: deleteError } = await supabase.from('teams').delete().eq('id', teamId);
+    if (deleteError) {
+      setError('削除に失敗しました');
+      setDeletingTeamId(null);
+      return;
+    }
+    setRows((rs) => rs.filter((r) => r.teamId !== teamId));
+    setDeletingTeamId(null);
   }
 
   async function signOut() {
@@ -398,9 +398,12 @@ export default function AccountPage() {
                     <td>{renderMemberCell(row, 'relationship')}</td>
                     <td>
                       {row.role === 'owner' && row.isDeletable && (
-                        // 実処理は次タスク（チーム削除実装）。今回は表示のみ
-                        <button className="team-delete-link" onClick={() => {}}>
-                          削除
+                        <button
+                          className="team-delete-link"
+                          onClick={() => deleteTeam(row.teamId)}
+                          disabled={deletingTeamId === row.teamId}
+                        >
+                          {deletingTeamId === row.teamId ? '削除中...' : '削除'}
                         </button>
                       )}
                     </td>
