@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { teamDisplayName } from '@/lib/team-display';
 
@@ -119,7 +120,10 @@ export default function SettingsForm({
 
   return (
     <div className="container">
-      <p className="page-title">{teamDisplayName(teamCallName)}の設定</p>
+      <div className="page-header">
+        <p className="page-title">{teamDisplayName(teamCallName)}の設定</p>
+        <Link href={`/home/${teamId}`} className="btn-sub">ホームへ戻る</Link>
+      </div>
 
       <div className="card">
         <div className="card-title">外部ツールへの投稿設定</div>
@@ -213,12 +217,6 @@ export default function SettingsForm({
       )}
 
       {error && <div className="error-msg">{error}</div>}
-
-      <div className="action-row">
-        <button className="btn-sub" onClick={() => router.push(`/home/${teamId}`)}>
-          戻る
-        </button>
-      </div>
     </div>
   );
 }

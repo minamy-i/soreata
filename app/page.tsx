@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { teamDisplayName } from '@/lib/team-display';
+import { buildRecordText } from '@/lib/record-text';
 import type { Session } from '@supabase/supabase-js';
 
 // 保存先候補（自分の行に空セルが無いチーム）
@@ -249,11 +250,7 @@ export default function Home() {
   }
 
   async function copyResult() {
-    const text = abilities
-      .map(({ title, description, person, solution }) =>
-        `${title}\n${description}\n当人は？ ${person}\n対応：${solution}`
-      )
-      .join('\n\n');
+    const text = buildRecordText(abilities);
     await navigator.clipboard.writeText(text);
     setCopyDone(true);
     setTimeout(() => setCopyDone(false), 2000);
@@ -377,7 +374,7 @@ export default function Home() {
 
         {confirmSave && saveCandidates.length === 1 && (
           <div className="card">
-            <p className="delete-confirm-msg">
+            <p className="confirm-msg">
               {teamDisplayName(saveCandidates[0].teamCallName)}に保存しますか？
             </p>
             <div className="action-row">

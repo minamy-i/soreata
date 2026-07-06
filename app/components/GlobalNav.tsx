@@ -35,8 +35,8 @@ export default function GlobalNav() {
               <span className="nav-label-short">AI分解</span>
             </Link>
             <Link href="/account" className={navClass('account')}>
-              <span className="nav-label-full">ダッシュボード</span>
-              <span className="nav-label-short">記録</span>
+              <span className="nav-label-full">チーム一覧</span>
+              <span className="nav-label-short">チーム</span>
             </Link>
           </>
         ) : (

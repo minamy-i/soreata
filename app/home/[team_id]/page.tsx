@@ -53,7 +53,14 @@ export default async function TeamPage({
 
   return (
     <div className="container">
-      <p className="page-title">{teamDisplayName(team.name)}</p>
+      <div className="page-header">
+        <p className="page-title">{teamDisplayName(team.name)}のホーム</p>
+        {canSeeSettings && (
+          <Link href={`/home/${team_id}/settings`} className="btn-sub">
+            チーム設定
+          </Link>
+        )}
+      </div>
       <p className="record-meta-date">
         あなたの表示：{myMembership.nickname}（{myMembership.relationship}）
       </p>
@@ -85,28 +92,24 @@ export default async function TeamPage({
         {!decompositions || decompositions.length === 0 ? (
           <p className="empty-note">分解して保存してみましょう</p>
         ) : (
-          <ul className="record-list">
-            {decompositions.map((d) => (
-              <li key={d.id}>
-                <Link href={`/home/${team_id}/record/${d.id}`} className="record-item">
-                  <span className="record-date">
-                    {new Date(d.created_at).toLocaleDateString('ja-JP')}
-                  </span>
-                  <span className="record-task">{d.task_text}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <>
+            <p className="empty-note">記録をクリックすると詳細が見られます</p>
+            <ul className="record-list">
+              {decompositions.map((d) => (
+                <li key={d.id}>
+                  <Link href={`/home/${team_id}/record/${d.id}`} className="record-item">
+                    <span className="record-date">
+                      {new Date(d.created_at).toLocaleDateString('ja-JP')}
+                    </span>
+                    <span className="record-task">{d.task_text}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </div>
 
-      {canSeeSettings && (
-        <div className="card">
-          <Link href={`/home/${team_id}/settings`} className="btn-sub">
-            チーム設定
-          </Link>
-        </div>
-      )}
     </div>
   );
 }
