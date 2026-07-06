@@ -41,6 +41,17 @@ export default async function TeamSettingsPage({
   // チーム削除セクションの表示切り替え（owner限定機能。空チームのみ即削除できる）
   const isEmpty = isOwner ? await isTeamEmpty(supabase, team_id) : false;
 
+  // 招待中一覧（owner限定機能）
+  let invitations: { id: string; invited_email: string }[] = [];
+  if (isOwner) {
+    const { data } = await supabase
+      .from('invitations')
+      .select('id, invited_email')
+      .eq('team_id', team_id)
+      .order('created_at', { ascending: true });
+    invitations = data ?? [];
+  }
+
   return (
     <SettingsForm
       teamId={team_id}
@@ -49,6 +60,7 @@ export default async function TeamSettingsPage({
       webhookPlatform={team.webhook_platform}
       isOwner={isOwner}
       isEmpty={isEmpty}
+      invitations={invitations}
     />
   );
 }

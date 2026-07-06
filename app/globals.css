@@ -461,6 +461,21 @@ button:active {
   background: rgba(255, 255, 255, 0.14);
 }
 
+/* 当人権限者（owner）の行を強調する（メンバー一覧のみ）：背景を暗く・文字を白に */
+.record-item-owner {
+  background: rgba(40, 40, 40, 0.60);
+}
+
+.record-item-owner .record-task,
+.record-item-owner .record-date {
+  color: var(--text);
+}
+
+/* 招待中一覧の項目（record-itemと同じ見た目に、取り消しボタンを右寄せする） */
+.invitation-row {
+  justify-content: space-between;
+}
+
 /* 保存先チーム選択リストの項目（record-itemと同じ見た目のボタン） */
 .team-select-btn {
   all: unset;

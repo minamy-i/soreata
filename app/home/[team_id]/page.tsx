@@ -61,16 +61,22 @@ export default async function TeamPage({
       <div className="card">
         <div className="card-title">メンバー一覧</div>
         <ul className="record-list">
-          {(members ?? []).map((m, i) => (
-            <li key={i}>
-              <span className="record-item">
-                <span className="record-task">{m.nickname}</span>
-                <span className="record-date">
-                  {m.relationship}・{m.role === 'owner' ? '当人権限者' : '協力者'}
+          {(members ?? []).map((m, i) => {
+            // 招待受諾直後はnickname・relationshipが未入力（/accountで入力するまでの一時状態）
+            const isPending = !m.nickname || !m.relationship;
+            return (
+              <li key={i}>
+                <span className={`record-item${m.role === 'owner' ? ' record-item-owner' : ''}`}>
+                  <span className="record-task">
+                    {isPending ? '協力者入室待ち' : m.nickname}
+                  </span>
+                  <span className="record-date">
+                    {isPending ? '' : `${m.relationship}・${m.role === 'owner' ? '当人権限者' : '協力者'}`}
+                  </span>
                 </span>
-              </span>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       </div>
 

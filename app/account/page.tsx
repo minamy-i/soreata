@@ -379,6 +379,9 @@ export default function AccountPage() {
         {rows.length === 0 && !creating && (
           <p className="empty-note">まだどのチームにも参加していません</p>
         )}
+        {rows.some((r) => !r.nickname || !r.relationship) && (
+          <p className="empty-note">未入力の項目があります。必ず入力してください</p>
+        )}
         {(rows.length > 0 || creating) && (
           <div className="team-table-wrap">
             <table className="team-table">
