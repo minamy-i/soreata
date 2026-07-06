@@ -1,6 +1,8 @@
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { isTeamEmpty } from "@/lib/team-empty";
+import { requireSession } from "@/lib/require-member";
+import { myMembershipQuery } from "@/lib/team-members";
 import SettingsForm from "./SettingsForm";
 
 export default async function TeamSettingsPage({
@@ -10,18 +12,13 @@ export default async function TeamSettingsPage({
 }) {
   const { team_id } = await params;
   const supabase = await createSupabaseServer();
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) redirect(`/login?next=/home/${team_id}/settings`);
+  const session = await requireSession(supabase, `/home/${team_id}/settings`);
 
   // 自分の所属確認（当人権限者、またはWebhook管理を委譲された協力者のみ入れる）
-  const { data: myMembership } = await supabase
-    .from('team_members')
-    .select('role, can_manage_webhook')
-    .eq('team_id', team_id)
-    .eq('account_id', session.user.id)
-    .is('revoked_at', null)
-    .single();
+  const { data: myMembership } = await myMembershipQuery<{
+    role: 'owner' | 'collaborator';
+    can_manage_webhook: boolean;
+  }>(supabase, team_id, session.user.id, 'role, can_manage_webhook').single();
 
   const isOwner = myMembership?.role === 'owner';
   const canManageWebhook = isOwner || myMembership?.can_manage_webhook === true;

@@ -4,3 +4,10 @@
 export function teamDisplayName(callName: string) {
   return `チーム${callName}`;
 }
+
+// team_members等とのjoinで取得したteams(name)から呼び名を取り出す。
+// supabase-jsのjoin結果は型が付かないため、この形の取り出しを1か所にまとめる
+export function teamNameOf(joined: unknown): string | null {
+  const team = joined as { name: string } | null;
+  return team?.name ?? null;
+}

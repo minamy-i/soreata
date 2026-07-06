@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildPrompt } from '@/lib/prompt';
-
-type Ability = {
-  title: string;
-  description: string;
-  person: string;
-  solution: string;
-  confirmed_at: null;
-};
+import type { Ability } from '@/lib/ability';
 
 // AI出力テキストをabilities配列に変換する
 function parseAbilities(text: string): Ability[] {

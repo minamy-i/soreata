@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
-import { teamDisplayName } from '@/lib/team-display';
+import { teamDisplayName, teamNameOf } from '@/lib/team-display';
 import { isTeamEmpty } from '@/lib/team-empty';
+import { deleteTeamById } from '@/lib/team-delete';
 
 // チーム一覧の1行（マイチーム・協力チームを1つの表で統合表示）
 // 1ユーザ1チームにつき有効な行は最大1つ（team_membersのユニーク制約）なのでteamIdだけで一意
@@ -78,16 +79,13 @@ export default function AccountPage() {
         .eq('account_id', userId)
         .is('revoked_at', null);
 
-      const teamRows: TeamRow[] = (members ?? []).map((m) => {
-        const team = m.teams as unknown as { name: string } | null;
-        return {
-          teamId: m.team_id,
-          teamCallName: team?.name ?? '',
-          nickname: m.nickname,
-          relationship: m.relationship,
-          role: m.role,
-        };
-      });
+      const teamRows: TeamRow[] = (members ?? []).map((m) => ({
+        teamId: m.team_id,
+        teamCallName: teamNameOf(m.teams) ?? '',
+        nickname: m.nickname,
+        relationship: m.relationship,
+        role: m.role,
+      }));
       setRows(teamRows);
 
       // 来ている招待
@@ -97,14 +95,11 @@ export default function AccountPage() {
         .eq('invited_email', userEmail);
 
       setInvitations(
-        (invs ?? []).map((i) => {
-          const team = i.teams as unknown as { name: string } | null;
-          return {
-            id: i.id,
-            teamId: i.team_id,
-            teamCallName: team?.name ?? '不明',
-          };
-        })
+        (invs ?? []).map((i) => ({
+          id: i.id,
+          teamId: i.team_id,
+          teamCallName: teamNameOf(i.teams) ?? '不明',
+        }))
       );
 
       // 削除リンクの出現条件（owner行のみ）：協力者0・招待0・記録0
@@ -248,7 +243,7 @@ export default function AccountPage() {
     setDeletingTeamId(teamId);
     setError('');
     const supabase = createSupabaseBrowser();
-    const { error: deleteError } = await supabase.from('teams').delete().eq('id', teamId);
+    const { error: deleteError } = await deleteTeamById(supabase, teamId);
     if (deleteError) {
       setError('削除に失敗しました');
       setDeletingTeamId(null);

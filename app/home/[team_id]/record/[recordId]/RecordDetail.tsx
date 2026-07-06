@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
+import { useAccordion } from '@/lib/use-accordion';
+import AbilityBody from '@/app/components/AbilityBody';
+import ConfirmBox from '@/app/components/ConfirmBox';
 import { teamDisplayName } from '@/lib/team-display';
-import type { Ability } from './page';
+import type { Ability } from '@/lib/ability';
 
 type Decomp = {
   id: string;
@@ -31,7 +34,7 @@ export default function RecordDetail({
 }) {
   const router = useRouter();
   const [abilities, setAbilities] = useState<Ability[]>(decomp.abilities);
-  const [openItems, setOpenItems] = useState<Set<number>>(new Set());
+  const { openItems, toggle: toggleAccordion } = useAccordion();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
@@ -39,15 +42,6 @@ export default function RecordDetail({
   const [lastPostedAt, setLastPostedAt] = useState(postedAt);
   const [postError, setPostError] = useState('');
   const [confirmPost, setConfirmPost] = useState(false);
-
-  function toggleAccordion(index: number) {
-    setOpenItems(prev => {
-      const next = new Set(prev);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
-  }
 
   const savedDate = new Date(decomp.created_at).toLocaleDateString('ja-JP');
 
@@ -152,17 +146,7 @@ export default function RecordDetail({
                 </div>
                 <span className={`accordion-icon${openItems.has(i) ? ' open' : ''}`}>▼</span>
               </button>
-              {openItems.has(i) && (
-                <div className="accordion-body">
-                  <div className="ability-description">
-                    {ability.description.split('\n').map((line, j) => (
-                      <span key={j}>{line}<br /></span>
-                    ))}
-                  </div>
-                  <span className="person-line">当人は？ {ability.person}</span>
-                  <div className="ability-solution"><strong>対応：</strong>{ability.solution}</div>
-                </div>
-              )}
+              {openItems.has(i) && <AbilityBody ability={ability} />}
             </li>
           ))}
         </ul>
@@ -183,17 +167,15 @@ export default function RecordDetail({
               )}
             </div>
           ) : (
-            <div className="confirm-box">
-              <p className="confirm-msg">前回投稿済みです。もう一度投稿しますか？</p>
-              <div className="action-row">
-                <button className="btn-sub" onClick={postWebhook} disabled={posting}>
-                  {posting ? '投稿中...' : '投稿する'}
-                </button>
-                <button className="btn-sub" onClick={() => setConfirmPost(false)}>
-                  キャンセル
-                </button>
-              </div>
-            </div>
+            <ConfirmBox
+              message="前回投稿済みです。もう一度投稿しますか？"
+              confirmLabel="投稿する"
+              busyLabel="投稿中..."
+              busy={posting}
+              confirmClass="btn-sub"
+              onConfirm={postWebhook}
+              onCancel={() => setConfirmPost(false)}
+            />
           )}
           {postError && <div className="error-msg">{postError}</div>}
         </div>
@@ -206,17 +188,15 @@ export default function RecordDetail({
               この記録を削除する
             </button>
           ) : (
-            <div className="confirm-box">
-              <p className="confirm-msg">本当に削除しますか？この操作は取り消せません。</p>
-              <div className="action-row">
-                <button className="btn-danger" onClick={deleteRecord} disabled={deleting}>
-                  {deleting ? '削除中...' : '削除する'}
-                </button>
-                <button className="btn-sub" onClick={() => setConfirmDelete(false)}>
-                  キャンセル
-                </button>
-              </div>
-            </div>
+            <ConfirmBox
+              message="本当に削除しますか？この操作は取り消せません。"
+              confirmLabel="削除する"
+              busyLabel="削除中..."
+              busy={deleting}
+              confirmClass="btn-danger"
+              onConfirm={deleteRecord}
+              onCancel={() => setConfirmDelete(false)}
+            />
           )}
         </div>
       )}

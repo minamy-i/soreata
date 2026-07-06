@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createSupabaseBrowser } from '@/lib/supabase-browser';
-import type { Session } from '@supabase/supabase-js';
+import { useSession } from '@/lib/use-session';
 
 export default function GlobalNav() {
   const pathname = usePathname();
-  const [session, setSession] = useState<Session | null>(null);
+  const session = useSession();
 
   function navClass(pattern: 'top' | 'account') {
     const active =
@@ -16,13 +14,6 @@ export default function GlobalNav() {
       pathname.startsWith('/account');
     return `global-nav-link${active ? ' global-nav-link--active' : ''}`;
   }
-
-  useEffect(() => {
-    const supabase = createSupabaseBrowser();
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
-    return () => subscription.unsubscribe();
-  }, []);
 
   return (
     <header className="global-nav">

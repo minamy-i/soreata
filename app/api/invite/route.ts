@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { createSupabaseAdmin } from '@/lib/supabase-admin';
+import { unauthorized, forbidden } from '@/lib/api-response';
+import { myMembershipQuery } from '@/lib/team-members';
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 });
+    return unauthorized();
   }
 
   const { teamId, email } = await req.json();
@@ -18,16 +20,15 @@ export async function POST(req: NextRequest) {
   }
 
   // 呼び出し元がこのチームのownerか確認（画面のisOwner表示に頼らず、API側で完結させる）
-  const { data: myMembership } = await supabase
-    .from('team_members')
-    .select('role')
-    .eq('team_id', teamId)
-    .eq('account_id', session.user.id)
-    .is('revoked_at', null)
-    .single();
+  const { data: myMembership } = await myMembershipQuery<{ role: 'owner' | 'collaborator' }>(
+    supabase,
+    teamId,
+    session.user.id,
+    'role'
+  ).single();
 
   if (myMembership?.role !== 'owner') {
-    return NextResponse.json({ error: '権限がありません' }, { status: 403 });
+    return forbidden();
   }
 
   const { data: myAccount } = await supabase

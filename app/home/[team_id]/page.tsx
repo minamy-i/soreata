@@ -2,6 +2,7 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { teamDisplayName } from "@/lib/team-display";
+import { requireMember } from "@/lib/require-member";
 
 export default async function TeamPage({
   params,
@@ -10,22 +11,8 @@ export default async function TeamPage({
 }) {
   const { team_id } = await params;
   const supabase = await createSupabaseServer();
-  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session) redirect(`/login?next=/home/${team_id}`);
-
-  // 自分の所属確認（非メンバー・空セルが残っている場合は/accountへ）
-  const { data: myMembership } = await supabase
-    .from('team_members')
-    .select('nickname, relationship, role, can_manage_webhook')
-    .eq('team_id', team_id)
-    .eq('account_id', session.user.id)
-    .is('revoked_at', null)
-    .single();
-
-  if (!myMembership || !myMembership.nickname || !myMembership.relationship) {
-    redirect('/account');
-  }
+  const { membership: myMembership } = await requireMember(supabase, team_id, `/home/${team_id}`);
 
   const { data: team } = await supabase
     .from('teams')

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { teamDisplayName } from '@/lib/team-display';
+import { deleteTeamById } from '@/lib/team-delete';
 
 type WebhookPlatform = 'slack' | 'discord';
 type Invitation = { id: string; invited_email: string };
@@ -109,7 +110,7 @@ export default function SettingsForm({
     setDeleting(true);
     setError('');
     const supabase = createSupabaseBrowser();
-    const { error: deleteError } = await supabase.from('teams').delete().eq('id', teamId);
+    const { error: deleteError } = await deleteTeamById(supabase, teamId);
     if (deleteError) {
       setError('削除に失敗しました');
       setDeleting(false);

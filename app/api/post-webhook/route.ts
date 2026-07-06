@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { buildRecordText } from '@/lib/record-text';
+import { unauthorized, forbidden } from '@/lib/api-response';
+import { myMembershipQuery } from '@/lib/team-members';
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 });
+    return unauthorized();
   }
 
   const { teamId, recordId } = await req.json();
@@ -17,16 +19,15 @@ export async function POST(req: NextRequest) {
   }
 
   // 呼び出し元がこのチームのメンバーか確認
-  const { data: myMembership } = await supabase
-    .from('team_members')
-    .select('id')
-    .eq('team_id', teamId)
-    .eq('account_id', session.user.id)
-    .is('revoked_at', null)
-    .maybeSingle();
+  const { data: myMembership } = await myMembershipQuery<{ id: string }>(
+    supabase,
+    teamId,
+    session.user.id,
+    'id'
+  ).maybeSingle();
 
   if (!myMembership) {
-    return NextResponse.json({ error: '権限がありません' }, { status: 403 });
+    return forbidden();
   }
 
   const { data: team } = await supabase
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
 
   const { data: decomp } = await supabase
     .from('decompositions')
-    .select('abilities')
+    .select('task_text, abilities')
     .eq('id', recordId)
     .eq('team_id', teamId)
     .single();
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '記録が見つかりません' }, { status: 404 });
   }
 
-  const text = buildRecordText(decomp.abilities);
+  const text = buildRecordText(decomp.task_text, decomp.abilities);
   const payload = team.webhook_platform === 'discord' ? { content: text } : { text };
 
   try {

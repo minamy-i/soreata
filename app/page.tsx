@@ -4,22 +4,18 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
-import { teamDisplayName } from '@/lib/team-display';
+import { useSession } from '@/lib/use-session';
+import { useAccordion } from '@/lib/use-accordion';
+import AbilityBody from '@/app/components/AbilityBody';
+import ConfirmBox from '@/app/components/ConfirmBox';
+import { teamDisplayName, teamNameOf } from '@/lib/team-display';
 import { buildRecordText } from '@/lib/record-text';
-import type { Session } from '@supabase/supabase-js';
+import type { Ability } from '@/lib/ability';
 
 // 保存先候補（自分の行に空セルが無いチーム）
 type SaveCandidate = {
   teamId: string;
   teamCallName: string;
-};
-
-type Ability = {
-  title: string;
-  description: string;
-  person: string;
-  solution: string;
-  confirmed_at: null;
 };
 
 const EXAMPLE_TASKS = [
@@ -37,21 +33,13 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [abilities, setAbilities] = useState<Ability[]>([]);
-  const [openItems, setOpenItems] = useState<Set<number>>(new Set());
-  const [session, setSession] = useState<Session | null>(null);
+  const { openItems, toggle: toggleAccordion, reset: resetAccordion } = useAccordion();
+  const session = useSession();
   const [copyDone, setCopyDone] = useState(false);
   const [saveCandidates, setSaveCandidates] = useState<SaveCandidate[]>([]);
   const [confirmSave, setConfirmSave] = useState(false);
   const [showTeamSelect, setShowTeamSelect] = useState(false);
   const router = useRouter();
-
-  // セッション取得・監視
-  useEffect(() => {
-    const supabase = createSupabaseBrowser();
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
-    return () => subscription.unsubscribe();
-  }, []);
 
   // 保存先候補（自分の行のnickname・relationshipが両方埋まっているチームのみ）を取得
   useEffect(() => {
@@ -68,10 +56,10 @@ export default function Home() {
       .not('nickname', 'is', null)
       .not('relationship', 'is', null)
       .then(({ data }) => {
-        const candidates: SaveCandidate[] = (data ?? []).map((m) => {
-          const team = m.teams as unknown as { name: string } | null;
-          return { teamId: m.team_id, teamCallName: team?.name ?? '' };
-        });
+        const candidates: SaveCandidate[] = (data ?? []).map((m) => ({
+          teamId: m.team_id,
+          teamCallName: teamNameOf(m.teams) ?? '',
+        }));
         setSaveCandidates(candidates);
       });
   }, [session]);
@@ -171,21 +159,12 @@ export default function Home() {
     return () => window.removeEventListener('resize', draw);
   }, []);
 
-  function toggleAccordion(index: number) {
-    setOpenItems(prev => {
-      const next = new Set(prev);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
-  }
-
   async function decompose() {
     if (!task.trim()) return;
     setLoading(true);
     setError('');
     setAbilities([]);
-    setOpenItems(new Set());
+    resetAccordion();
     setConfirmSave(false);
     setShowTeamSelect(false);
     try {
@@ -208,7 +187,7 @@ export default function Home() {
     setTask('');
     setAbilities([]);
     setError('');
-    setOpenItems(new Set());
+    resetAccordion();
     setConfirmSave(false);
     setShowTeamSelect(false);
   }
@@ -250,7 +229,7 @@ export default function Home() {
   }
 
   async function copyResult() {
-    const text = buildRecordText(abilities);
+    const text = buildRecordText(task, abilities);
     await navigator.clipboard.writeText(text);
     setCopyDone(true);
     setTimeout(() => setCopyDone(false), 2000);
@@ -349,70 +328,55 @@ export default function Home() {
                 </button>
               )}
             </div>
-            {abilities.map(({ title, description, person, solution }, i) => (
+
+            {confirmSave && saveCandidates.length === 1 && (
+              <div className="card-section">
+                <ConfirmBox
+                  message={`${teamDisplayName(saveCandidates[0].teamCallName)}に保存しますか？`}
+                  confirmLabel="保存する"
+                  busyLabel="保存中..."
+                  busy={saving}
+                  confirmClass="btn-main"
+                  onConfirm={() => saveResult(saveCandidates[0].teamId)}
+                  onCancel={() => setConfirmSave(false)}
+                />
+              </div>
+            )}
+
+            {showTeamSelect && (
+              <div className="card-section">
+                <p className="empty-note">保存先のチームを選択</p>
+                <ul className="record-list">
+                  {saveCandidates.map((c) => (
+                    <li key={c.teamId}>
+                      <button
+                        className="team-select-btn"
+                        onClick={() => saveResult(c.teamId)}
+                        disabled={saving}
+                      >
+                        {teamDisplayName(c.teamCallName)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="action-row">
+                  <button className="btn-sub" onClick={() => setShowTeamSelect(false)}>
+                    キャンセル
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {abilities.map((ability, i) => (
               <div key={i} className="accordion-item">
                 <button className="accordion-header" onClick={() => toggleAccordion(i)}>
                   <span className="accordion-square">◻︎</span>
-                  <span className="accordion-title">{title}</span>
+                  <span className="accordion-title">{ability.title}</span>
                   <span className={`accordion-icon${openItems.has(i) ? ' open' : ''}`}>▼</span>
                 </button>
-                {openItems.has(i) && (
-                  <div className="accordion-body">
-                    <div className="ability-description">
-                      {description.split('\n').map((line, j) => (
-                        <span key={j}>{line}<br /></span>
-                      ))}
-                    </div>
-                    <span className="person-line">当人は？ {person}</span>
-                    <div className="ability-solution"><strong>対応：</strong>{solution}</div>
-                  </div>
-                )}
+                {openItems.has(i) && <AbilityBody ability={ability} />}
               </div>
             ))}
-          </div>
-        )}
-
-        {confirmSave && saveCandidates.length === 1 && (
-          <div className="card">
-            <p className="confirm-msg">
-              {teamDisplayName(saveCandidates[0].teamCallName)}に保存しますか？
-            </p>
-            <div className="action-row">
-              <button
-                className="btn-main"
-                onClick={() => saveResult(saveCandidates[0].teamId)}
-                disabled={saving}
-              >
-                {saving ? '保存中...' : '保存する'}
-              </button>
-              <button className="btn-sub" onClick={() => setConfirmSave(false)}>
-                キャンセル
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showTeamSelect && (
-          <div className="card">
-            <div className="card-title">保存先のチームを選択</div>
-            <ul className="record-list">
-              {saveCandidates.map((c) => (
-                <li key={c.teamId}>
-                  <button
-                    className="team-select-btn"
-                    onClick={() => saveResult(c.teamId)}
-                    disabled={saving}
-                  >
-                    {teamDisplayName(c.teamCallName)}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <div className="action-row">
-              <button className="btn-sub" onClick={() => setShowTeamSelect(false)}>
-                キャンセル
-              </button>
-            </div>
           </div>
         )}
       </div>

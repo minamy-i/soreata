@@ -2,14 +2,8 @@ import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import RecordDetail from "./RecordDetail";
 import { teamDisplayName } from "@/lib/team-display";
-
-export type Ability = {
-  title: string;
-  description: string;
-  person: string;
-  solution: string;
-  confirmed_at: string | null;
-};
+import { requireMember } from "@/lib/require-member";
+import type { Ability } from "@/lib/ability";
 
 export default async function RecordPage({
   params,
@@ -18,22 +12,12 @@ export default async function RecordPage({
 }) {
   const { team_id, recordId } = await params;
   const supabase = await createSupabaseServer();
-  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session) redirect(`/login?next=/home/${team_id}/record/${recordId}`);
-
-  // 自分の所属確認（非メンバー・空セルが残っている場合は/accountへ）
-  const { data: myMembership } = await supabase
-    .from('team_members')
-    .select('nickname, relationship, role')
-    .eq('team_id', team_id)
-    .eq('account_id', session.user.id)
-    .is('revoked_at', null)
-    .single();
-
-  if (!myMembership || !myMembership.nickname || !myMembership.relationship) {
-    redirect('/account');
-  }
+  const { membership: myMembership } = await requireMember(
+    supabase,
+    team_id,
+    `/home/${team_id}/record/${recordId}`
+  );
 
   // AI分析記録の取得
   const { data: decomp } = await supabase
