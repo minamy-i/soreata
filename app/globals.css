@@ -15,6 +15,7 @@
   --text-faint: rgba(255, 255, 255, 0.35);
   --bg-owner-highlight: rgba(40, 40, 40, 0.60);
   --bg-table-header: rgba(40, 40, 40, 0.60);
+  --bg-card: rgba(64, 64, 64, 0.55);
   --color-error: #ff8080;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
   --radius-card: 18px;
@@ -52,8 +53,8 @@ body {
   justify-content: space-between;
   padding: 0 24px;
   background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
 
@@ -139,9 +140,9 @@ h1 {
 
 /* ---- カード（すりガラス） ---- */
 .card {
-  background: rgba(64, 64, 64, 0.55);
-  backdrop-filter: blur(16px);
+  background: var(--bg-card);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow);

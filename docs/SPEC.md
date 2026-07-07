@@ -249,6 +249,5 @@ AI分解記録のコピー機能と同じテキストを、Slack・DiscordのWeb
 - `prompt.ts`：EXAMPLESとbuildPromptを一元管理する共有モジュール。API routeから参照。
 - `app/api/decompose/route.ts`：Next.js API route。プロンプト組み立てと Gemini API 呼び出しを担う。能力一覧・当人は？を一括で返す。
 - `demo.html`：プロトタイプ用のデモ。仕様対象外。
-- `data/samples.json`：実出力サンプルデータ。スキーマ：[{id, task, createdAt, abilities: [{title, description, person, solution}]}]。
 - APIキーは環境変数（`GEMINI_API_KEY`）で管理。コードには書かない。
 - モデル：Gemini 3.1 Flash Lite（`gemini-3.1-flash-lite`）

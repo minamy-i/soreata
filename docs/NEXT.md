@@ -1,7 +1,7 @@
 # NEXT
 
-更新：2026-07-07 8:50
-push：2026-07-07 8:50 完了
+更新：2026-07-07 12:44
+push：2026-07-07 12:44 完了
 
 ## 現在の方針
 soreata は段階（旧「v1」「v2」）で分けず、一つの完成形を最初から設計・構築する。
@@ -14,9 +14,32 @@ DB・骨格（アカウント・チーム・権限・招待の中核構造）は
 
 ## 次にやること
 
-タイトル部の説明変更
-あれ？どうしてできないんだろう。そんな困りごとを、一緒に考えてみませんか。
-行動を前提能力に分解し、対応のヒントを提案します。
+- [x] タイトル部の説明変更（2026-07-07）
+  - h1本体「それ！できて当たり前？」は維持。副題・説明文を「あれ？どうしてできないんだろう。／行動を前提能力に分解し、対応のヒントを提案します。」に短縮
+  - 反映先：`app/page.tsx`・`app/layout.tsx`（metadata.description）・`demo.html`（現在動作していないが将来のため合わせた）・`gitignores/index_AItest.html`
+  - `gitignores/promo.html`・`gitignores/samples.html`（タイトル・副題部分）は対象外のまま維持（h1タイトルのみ共通で、副題・概要文はそれぞれ独自の文脈を持つ資料のため直さない）
+- [x] 例題（大学生枠）の差し替え（2026-07-07）
+  - `app/page.tsx`のEXAMPLE_TASKS：「大学での試験会場が講義室と違う場合があると知らなかった」→「就活と卒論、ダブルブッキング？何を優先すればいいかわからない」（発表会ポスター向けにインパクト重視で選定）
+  - `gitignores/index_AItest.html`・`demo.html`も自前の例題ボタン一覧を持っており（app/page.tsxとは別管理）、同様に差し替え漏れがあったため追加修正
+  - `demo.html`のサンプル選択（`selectSample`）は`fetch('/data/samples.json')`でデータ取得する作りだが、`data/`は`public/`配下でないため本番では元々404（＝「今動かない」の実体）。今回のdata移動で悪化したわけではない。修正はスコープ外（仕様対象外）のため未対応
+- [x] 「中学生の体育祭」表記を「中学校の体育祭」に統一（2026-07-07）
+  - 他の例（社会人「会社で」・大学「大学での」）が施設起点なのに対し、oodamaのみ「中学生の」と人起点でズレていたための修正。中身（能力・当人は？・対応）は変更なし
+  - 反映先8箇所：`app/page.tsx`・`demo.html`・`gitignores/index_AItest.html`・`gitignores/samples.html`（表紙インデックス・ページ見出しの2箇所）・`gitignores/samples.json`・`lib/prompt.ts`（few-shot本体）・`gitignores/prompt.js`（未使用の旧ファイル）
+  - `lib/prompt.ts`は実際にGeminiへ送るfew-shot例（大玉送り＝生命線テスト対象2例の1つ）のため、通常のUI文言より慎重に扱うべき箇所として一度確認を挟んで反映
+  - 例題ボタンはテキスト入力欄に文言を入れるだけで、自由記述と同じくAPI（`/api/decompose`）を都度呼ぶ。事前生成データは使っていない
+  - `gitignores/samples.html`のサンプル4・`gitignores/samples.json`のdaigakuseiエントリも同じ新課題・新7能力（実機API出力・当人は？のトーンのみ大人向けに手直し）に差し替え
+  - サンプル4が能力5→7に増えたためA4 1ページ体裁からはみ出すが、PDF出力のみの用途のため許容し据え置き（2026-07-07決定）
+- [x] `data/samples.json`を`gitignores/samples.json`へ移動・git追跡解除。空になった`data/`フォルダを削除（2026-07-07）
+  - アプリ・プロンプトのどちらからも参照されていなかったため実害なし（few-shot例は`lib/prompt.ts`のEXAMPLES定数に別途ハードコード）
+  - `docs/SPEC.md`の`data/samples.json`記載行を削除
+- [x] すりガラスカードのbackdrop-filterが効かないバグを修正（2026-07-07）
+  - 現象：AItestでは効くのに本番アプリでは効かない（AI分解画面の入力カードが読みにくい）
+  - 原因：Next.jsのCSSビルド処理（Lightning CSS）が`backdrop-filter`と`-webkit-backdrop-filter`を重複とみなし、後に書いた方だけを残す仕様。元のソースは標準プロパティを先に書いていたため、Chromeが理解できない`-webkit-`版だけが生き残り、標準プロパティが消えていた（配信中CSSをcurlで直接確認して特定）
+  - 対応：`app/globals.css`の`.global-nav`・`.card`の2箇所で、`-webkit-backdrop-filter`→`backdrop-filter`の順に書き換え。配信CSSで両方残ることを確認
+  - カードの不透明度は`0.55`のまま維持（一時0.74に上げる案も検討したが、「気に入っている」ため据え置きで決定）
+- [x] ステップバッジの表記統一（2026-07-07）
+  - AI分解画面の入力カード「1」の次が「↓」（下矢印）になっていて番号が続いていなかった箇所を「2」に変更（`app/page.tsx`の「分解・対応の一覧」カード見出し）
+  - 「丸数字を使わない」記憶はClaude Codeのターミナル出力に関する話であり、アプリUIの丸バッジ自体を禁じるものではないと確認（memory訂正済み）
 
 ### アカウント中心モデルへの再設計（進行中）
 
@@ -113,6 +136,10 @@ DB・骨格（アカウント・チーム・権限・招待の中核構造）は
   - `.date-input`の二重枠（ブラウザ標準の枠が残っていた）を`appearance: none`で解消。フォーカス時の枠も独自色に
   - フォーカスリングをアプリ全体で統一：`button`・`a`とも`outline:none`にした上で`:focus-visible`（キーボード操作時のみ）だけ`--border-strong`で表示。マウスクリックでは出ない
   - `.delete-confirm`/`.delete-confirm-msg`を`.confirm-box`/`.confirm-msg`に一般化（削除・保存確認・再投稿確認で共通化。上記「外部ツールへの投稿ボタン」の再投稿確認もこれを使用）
+- [x] タイトル部の説明変更（2026-07-07）
+  - h1本体「それ！できて当たり前？」は維持。副題・説明文を「あれ？どうしてできないんだろう。／行動を前提能力に分解し、対応のヒントを提案します。」に短縮
+  - 反映先：`app/page.tsx`・`app/layout.tsx`（metadata.description）・`demo.html`（現在動作していないが将来のため合わせた）・`gitignores/index_AItest.html`
+  - `gitignores/promo.html`・`gitignores/samples.html`は対象外（h1タイトルのみ共通で、副題・概要文はそれぞれ独自の文脈を持つ資料のため直さない）
 - [x] コードの整理整頓（重複の共通化・CSS変数の意味グループ化）（2026-07-07）
   - 判断基準：同じ意味のものはまとめる／偶然値が一致するだけの別物は分ける（後々の変更のしやすさ・可読性のため）
   - `lib/ability.ts`：AI分解結果1件の型（Ability）を新設し、4箇所の重複定義（名前が揺れていた`AbilityLike`含む）を統合

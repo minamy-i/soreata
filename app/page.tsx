@@ -21,8 +21,8 @@ type SaveCandidate = {
 const EXAMPLE_TASKS = [
   '走り回る2歳児を紙芝居へ注目させる',
   '小学校低学年の子が「太郎くんのうしろに並んで」の指示がわからない',
-  '中学生の体育祭の「大玉送り」で、相手チームの邪魔に行かないようにする',
-  '大学での試験会場が講義室と違う場合があると知らなかった',
+  '中学校の体育祭の「大玉送り」で、相手チームの邪魔に行かないようにする',
+  '就活と卒論、ダブルブッキング？何を優先すればいいかわからない',
   '既に何年も勤めている会社で新しい仕事の手順を覚えるのに時間がかかる',
 ];
 
@@ -261,10 +261,8 @@ export default function Home() {
         <header>
           <h1>それ！できて当たり前？</h1>
           <p className="subtitle">
-            あれ？何故できないんだろう？<br className="br-sp" />
-            その困りごと、一緒に考えてみましょう。<br />
-            「できて当たり前」とされる行動・指示も<br className="br-sp" />
-            要素と必要な能力に分解し対応を提案します。
+            あれ？どうしてできないんだろう。<br className="br-sp" />
+            行動を前提能力に分解し、対応のヒントを提案します。
           </p>
         </header>
 
@@ -314,7 +312,7 @@ export default function Home() {
         {abilities.length > 0 && (
           <div className="card">
             <div className="card-title">
-              <span className="step-badge">↓</span>分解・対応の一覧
+              <span className="step-badge">2</span>分解・対応の一覧
               <button className="btn-sub btn-copy" onClick={copyResult}>
                 {copyDone ? 'コピーしました' : 'コピー'}
               </button>

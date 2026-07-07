@@ -4,7 +4,7 @@ import GlobalNav from "./components/GlobalNav";
 
 export const metadata: Metadata = {
   title: "それ！できて当たり前？",
-  description: "「できて当たり前」とされる行動・指示を、要素と必要な能力に分解し対応を提案するアプリ",
+  description: "行動を前提能力に分解し、対応のヒントを提案します。",
 };
 
 export default function RootLayout({
