@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { useSession } from '@/lib/use-session';
 import { useAccordion } from '@/lib/use-accordion';
@@ -291,21 +290,6 @@ export default function Home() {
             <button className="btn-sub" onClick={resetAll}>クリア</button>
             {loading && <span className="loading">分解中...</span>}
           </div>
-          <p className="login-note">
-            {!session ? (
-              <>
-                結果を保存するにはチームが必要です。ログイン後、チームを作成するか、既存チームからの招待をお待ちください。
-                <button className="btn-sub" onClick={signIn}>Googleでログイン</button>
-              </>
-            ) : saveCandidates.length === 0 ? (
-              <>
-                保存にはチームが必要です
-                <Link href="/account" className="btn-sub">チームを作成する</Link>
-              </>
-            ) : (
-              '分解後に保存できます'
-            )}
-          </p>
           {error && <div className="error-msg">{error}</div>}
         </div>
 
@@ -326,6 +310,16 @@ export default function Home() {
                 </button>
               )}
             </div>
+
+            {!(session && saveCandidates.length > 0) && (
+              <p className="guest-note">
+                登録後のチーム作成・所属により結果を保存できます。<br />
+                未登録の方は、コピーをご利用ください。
+                {!session && (
+                  <button className="btn-sub" onClick={signIn}>Googleでログイン</button>
+                )}
+              </p>
+            )}
 
             {confirmSave && saveCandidates.length === 1 && (
               <div className="card-section">
