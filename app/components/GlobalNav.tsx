@@ -31,7 +31,7 @@ export default function GlobalNav() {
             </Link>
           </>
         ) : (
-          <Link href="/login" className="global-nav-link">ログイン</Link>
+          <Link href="/login" className="global-nav-link">Googleでログイン</Link>
         )}
       </nav>
     </header>

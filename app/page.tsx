@@ -234,14 +234,6 @@ export default function Home() {
     setTimeout(() => setCopyDone(false), 2000);
   }
 
-  async function signIn() {
-    const supabase = createSupabaseBrowser();
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-  }
-
   return (
     <>
       <canvas
@@ -313,11 +305,7 @@ export default function Home() {
 
             {!(session && saveCandidates.length > 0) && (
               <p className="guest-note">
-                登録後のチーム作成・所属により結果を保存できます。<br />
-                未登録の方は、コピーをご利用ください。
-                {!session && (
-                  <button className="btn-sub" onClick={signIn}>Googleでログイン</button>
-                )}
+                次回以降の結果は、登録後のチーム作成・所属により保存できます。
               </p>
             )}
 
