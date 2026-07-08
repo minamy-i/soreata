@@ -294,13 +294,13 @@ export default function Home() {
           <p className="login-note">
             {!session ? (
               <>
-                結果を保存するには分解前にログインしてください
+                結果を保存するにはチームが必要です。ログイン後、チームを作成するか、既存チームからの招待をお待ちください。
                 <button className="btn-sub" onClick={signIn}>Googleでログイン</button>
               </>
             ) : saveCandidates.length === 0 ? (
               <>
-                保存先のチームがありません
-                <Link href="/account" className="btn-sub">アカウントへ</Link>
+                保存にはチームが必要です
+                <Link href="/account" className="btn-sub">チームを作成する</Link>
               </>
             ) : (
               '分解後に保存できます'
