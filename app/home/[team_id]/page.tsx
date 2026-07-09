@@ -75,7 +75,12 @@ export default async function TeamPage({
       </div>
 
       <div className="card">
-        <div className="card-title">AI分解の記録</div>
+        <div className="card-title">
+          AI分解の記録
+          <Link href={`/?team=${team_id}`} className="btn-sub">
+            AI分解する
+          </Link>
+        </div>
         {!decompositions || decompositions.length === 0 ? (
           <p className="empty-note">分解して保存してみましょう</p>
         ) : (

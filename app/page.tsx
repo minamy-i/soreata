@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { useSession } from '@/lib/use-session';
 import { useAccordion } from '@/lib/use-accordion';
@@ -25,7 +25,13 @@ const EXAMPLE_TASKS = [
   '既に何年も勤めている会社で新しい仕事の手順を覚えるのに時間がかかる',
 ];
 
-export default function Home() {
+// 保存できない状態（=teamパラメータでチームが確定していない）向けの案内文
+// 「チームホーム起点への一本化」決定（docs/NOTES.md参照）により、
+// このページ単体では保存できない。案内はチーム所属状況で出し分ける。
+const BRIDGE_TEXT_HAS_TEAM = 'このページはお試し用です。保存するには、チームホームの「AI分解する」から開いてください。';
+const BRIDGE_TEXT_NO_TEAM = '次回以降の結果は、登録後のチーム作成・所属により保存できます。';
+
+function HomeContent() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [task, setTask] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,8 +43,12 @@ export default function Home() {
   const [copyDone, setCopyDone] = useState(false);
   const [saveCandidates, setSaveCandidates] = useState<SaveCandidate[]>([]);
   const [confirmSave, setConfirmSave] = useState(false);
-  const [showTeamSelect, setShowTeamSelect] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const teamId = searchParams.get('team');
+
+  // チームホーム経由（?team=）で入った場合のみ、その値が実際の保存先候補と一致するかを見る
+  const activeTeam = saveCandidates.find((c) => c.teamId === teamId);
 
   // 保存先候補（自分の行のnickname・relationshipが両方埋まっているチームのみ）を取得
   useEffect(() => {
@@ -165,7 +175,6 @@ export default function Home() {
     setAbilities([]);
     resetAccordion();
     setConfirmSave(false);
-    setShowTeamSelect(false);
     try {
       const res = await fetch('/api/decompose', {
         method: 'POST',
@@ -188,19 +197,9 @@ export default function Home() {
     setError('');
     resetAccordion();
     setConfirmSave(false);
-    setShowTeamSelect(false);
   }
 
-  // 保存ボタン押下：候補数に応じて確認ブロック／チーム選択リストを出し分ける
-  function handleSaveClick() {
-    if (saveCandidates.length === 1) {
-      setConfirmSave(true);
-    } else if (saveCandidates.length > 1) {
-      setShowTeamSelect(true);
-    }
-  }
-
-  async function saveResult(teamId: string) {
+  async function saveResult(targetTeamId: string) {
     if (!session) return;
     setSaving(true);
     setError('');
@@ -209,7 +208,7 @@ export default function Home() {
       const { data: decomp, error: insertError } = await supabase
         .from('decompositions')
         .insert({
-          team_id: teamId,
+          team_id: targetTeamId,
           created_by: session.user.id,
           task_text: task,
           abilities,
@@ -219,7 +218,7 @@ export default function Home() {
 
       if (insertError || !decomp) throw insertError ?? new Error('保存に失敗しました');
 
-      router.push(`/home/${teamId}/record/${decomp.id}`);
+      router.push(`/home/${targetTeamId}/record/${decomp.id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '保存に失敗しました');
     } finally {
@@ -292,58 +291,34 @@ export default function Home() {
               <button className="btn-sub btn-copy" onClick={copyResult}>
                 {copyDone ? 'コピーしました' : 'コピー'}
               </button>
-              {session && (
+              {activeTeam && (
                 <button
                   className="btn-sub btn-save"
-                  onClick={handleSaveClick}
-                  disabled={saving || saveCandidates.length === 0}
+                  onClick={() => setConfirmSave(true)}
+                  disabled={saving}
                 >
                   {saving ? '保存中...' : '保存する'}
                 </button>
               )}
             </div>
 
-            {!(session && saveCandidates.length > 0) && (
+            {!activeTeam && (
               <p className="guest-note">
-                次回以降の結果は、登録後のチーム作成・所属により保存できます。
+                {session && saveCandidates.length > 0 ? BRIDGE_TEXT_HAS_TEAM : BRIDGE_TEXT_NO_TEAM}
               </p>
             )}
 
-            {confirmSave && saveCandidates.length === 1 && (
+            {confirmSave && activeTeam && (
               <div className="card-section">
                 <ConfirmBox
-                  message={`${teamDisplayName(saveCandidates[0].teamCallName)}に保存しますか？`}
+                  message={`${teamDisplayName(activeTeam.teamCallName)}に保存しますか？`}
                   confirmLabel="保存する"
                   busyLabel="保存中..."
                   busy={saving}
                   confirmClass="btn-main"
-                  onConfirm={() => saveResult(saveCandidates[0].teamId)}
+                  onConfirm={() => saveResult(activeTeam.teamId)}
                   onCancel={() => setConfirmSave(false)}
                 />
-              </div>
-            )}
-
-            {showTeamSelect && (
-              <div className="card-section">
-                <p className="empty-note">保存先のチームを選択</p>
-                <ul className="record-list">
-                  {saveCandidates.map((c) => (
-                    <li key={c.teamId}>
-                      <button
-                        className="team-select-btn"
-                        onClick={() => saveResult(c.teamId)}
-                        disabled={saving}
-                      >
-                        {teamDisplayName(c.teamCallName)}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                <div className="action-row">
-                  <button className="btn-sub" onClick={() => setShowTeamSelect(false)}>
-                    キャンセル
-                  </button>
-                </div>
               </div>
             )}
 
@@ -361,5 +336,13 @@ export default function Home() {
         )}
       </div>
     </>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense>
+      <HomeContent />
+    </Suspense>
   );
 }
