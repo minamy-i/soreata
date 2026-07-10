@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { useSession } from '@/lib/use-session';
@@ -11,9 +11,18 @@ export type SaveCandidate = {
   teamCallName: string;
 };
 
+type ActiveTeamState = {
+  saveCandidates: SaveCandidate[];
+  activeTeam: SaveCandidate | undefined;
+};
+
+const ActiveTeamContext = createContext<ActiveTeamState>({ saveCandidates: [], activeTeam: undefined });
+
 // チームホーム経由（/?team=...）でチームが確定している場合のみ、そのチーム名を返す。
-// 「チーム確定」の判定はAI分解画面（/）でも、ナビのチーム名表示でも同じ条件を使うため共通化した
-export function useActiveTeam(): { saveCandidates: SaveCandidate[]; activeTeam: SaveCandidate | undefined } {
+// 「チーム確定」の判定はAI分解画面（/）でも、ナビのチーム名表示でも同じ条件を使うため共通化した。
+// フェッチ自体はこのProviderに1本化する（GlobalNav・AI分解画面それぞれがフックを呼ぶ方式だと、
+// /ページで同じクエリが2回走ってしまうため。app/layout.tsxで全体をラップする）
+export function ActiveTeamProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const session = useSession();
@@ -43,5 +52,15 @@ export function useActiveTeam(): { saveCandidates: SaveCandidate[]; activeTeam: 
       });
   }, [session, pathname]);
 
-  return { saveCandidates, activeTeam: saveCandidates.find((c) => c.teamId === teamId) };
+  const activeTeam = saveCandidates.find((c) => c.teamId === teamId);
+
+  return (
+    <ActiveTeamContext.Provider value={{ saveCandidates, activeTeam }}>
+      {children}
+    </ActiveTeamContext.Provider>
+  );
+}
+
+export function useActiveTeam(): ActiveTeamState {
+  return useContext(ActiveTeamContext);
 }

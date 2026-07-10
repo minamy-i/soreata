@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import GlobalNav from "./components/GlobalNav";
 import Footer from "./components/Footer";
+import { ActiveTeamProvider } from "@/lib/use-active-team";
 
 export const metadata: Metadata = {
   title: "それ！できて当たり前？",
@@ -21,9 +22,11 @@ export default function RootLayout({
       </head>
       <body>
         <Suspense>
-          <GlobalNav />
+          <ActiveTeamProvider>
+            <GlobalNav />
+            {children}
+          </ActiveTeamProvider>
         </Suspense>
-        {children}
         <Footer />
       </body>
     </html>

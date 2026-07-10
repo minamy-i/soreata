@@ -2,6 +2,29 @@
 
 ---
 
+## useActiveTeamをContext化し、/ページでの二重フェッチを解消
+
+日時：2026-07-10 19:00
+
+結論：
+`lib/use-active-team.ts`をフック単体からContext（`ActiveTeamProvider`＋`useActiveTeam`）に変更した。
+従来は`GlobalNav`とAI分解画面（`app/page.tsx`）がそれぞれ`useActiveTeam()`を呼んでおり、両方が同時にマウントされる`/`ページで同じSupabaseクエリ（`team_members`から保存先候補を取得）が2回走っていた。GlobalNav側は`activeTeam`（確定チーム名）しか使わず、`saveCandidates`（候補一覧）は使っていなかったため、フェッチをProviderに1本化して`app/layout.tsx`でアプリ全体をラップする形にした。
+これに伴い、`useSearchParams`を直接呼ぶ箇所がProvider1箇所に集約されたため、`app/page.tsx`側で個別に持っていた`Suspense`＋`HomeContent`分割は不要になり削除した（`app/layout.tsx`の`Suspense`がProvider経由で全体をカバーする）。
+
+きっかけ：
+コード整理整頓の一環で、直近の機能追加（保存導線の一本化・チーム名表示のナビバー移動）によって`useActiveTeam`が2箇所から呼ばれる状態になっていたことに気づいた。
+
+連動：
+- `lib/use-active-team.ts`→`lib/use-active-team.tsx`にリネーム。`ActiveTeamProvider`（Context提供）と`useActiveTeam`（Context参照のみ）に分離
+- `app/layout.tsx`：`ActiveTeamProvider`で`<GlobalNav />`と`{children}`を囲む
+- `app/page.tsx`：`HomeContent`/`Suspense`の分割を廃止し、`Home`を直接のデフォルトエクスポートに統合
+- `app/components/GlobalNav.tsx`：呼び出し方は変更なし（`useActiveTeam()`の戻り値がContext参照に変わっただけ）
+
+不採用案：
+- 二重フェッチを許容したまま放置する：`/`ページを開くたびに同じクエリが2回発生する状態が、機能追加のたびに気づかれにくい形で残り続ける。実装コストが低い割に、まとめておく方が後々の見通しが良い。
+
+---
+
 ## team-name-tagをAI分解画面からナビバーへ移動。3箇所の角を4pxで統一
 
 日時：2026-07-10 17:30

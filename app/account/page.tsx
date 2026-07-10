@@ -266,28 +266,34 @@ export default function AccountPage() {
     setEditValue(value);
   }
 
+  // 編集中のセルに出す入力欄（Enterで確定・Escapeで取り消し）。3種類のセルで共通
+  // 保存先・表示（editingでない時の見た目）はセルごとに異なるため、呼び出し側に残す
+  function renderEditInput(onSave: () => void, resetValue: string) {
+    return (
+      <input
+        autoFocus
+        className="team-cell-input"
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        onBlur={onSave}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+          if (e.key === 'Escape') {
+            setEditValue(resetValue);
+            e.currentTarget.blur();
+          }
+        }}
+      />
+    );
+  }
+
   // ニックネーム・relationshipセルの表示/編集切り替え
   function renderMemberCell(row: TeamRow, field: 'nickname' | 'relationship') {
     const isEditingThis = editing?.teamId === row.teamId && editing.field === field;
     const value = row[field];
 
     if (isEditingThis) {
-      return (
-        <input
-          autoFocus
-          className="team-cell-input"
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onBlur={() => saveMemberField(row, field)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.currentTarget.blur();
-            if (e.key === 'Escape') {
-              setEditValue(value ?? '');
-              e.currentTarget.blur();
-            }
-          }}
-        />
-      );
+      return renderEditInput(() => saveMemberField(row, field), value ?? '');
     }
 
     return (
@@ -312,22 +318,7 @@ export default function AccountPage() {
     const displayName = teamDisplayName(row.teamCallName);
 
     if (isEditingThis) {
-      return (
-        <input
-          autoFocus
-          className="team-cell-input"
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onBlur={() => saveTeamName(row)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.currentTarget.blur();
-            if (e.key === 'Escape') {
-              setEditValue(row.teamCallName);
-              e.currentTarget.blur();
-            }
-          }}
-        />
-      );
+      return renderEditInput(() => saveTeamName(row), row.teamCallName);
     }
 
     return (

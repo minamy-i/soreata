@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { useSession } from '@/lib/use-session';
@@ -26,7 +26,7 @@ const EXAMPLE_TASKS = [
 const BRIDGE_TEXT_HAS_TEAM = 'このページはお試し用です。保存するには、チームホームの「AI分解する」から開いてください。';
 const BRIDGE_TEXT_NO_TEAM = '次回以降の結果は、登録後のチーム作成・所属により保存できます。';
 
-function HomeContent() {
+export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [task, setTask] = useState('');
   const [loading, setLoading] = useState(false);
@@ -305,13 +305,5 @@ function HomeContent() {
         )}
       </div>
     </>
-  );
-}
-
-export default function Home() {
-  return (
-    <Suspense>
-      <HomeContent />
-    </Suspense>
   );
 }

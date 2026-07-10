@@ -17,7 +17,7 @@ export default function ConfirmBox({
   onCancel: () => void;
 }) {
   return (
-    <div className="confirm-box">
+    <div>
       <p className="confirm-msg">{message}</p>
       <div className="action-row">
         <button className={confirmClass} onClick={onConfirm} disabled={busy}>
