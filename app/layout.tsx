@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import "./globals.css";
 import GlobalNav from "./components/GlobalNav";
+import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: "それ！できて当たり前？",
@@ -23,6 +24,7 @@ export default function RootLayout({
           <GlobalNav />
         </Suspense>
         {children}
+        <Footer />
       </body>
     </html>
   );

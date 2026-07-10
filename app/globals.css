@@ -791,3 +791,21 @@ a.record-item:hover {
 .team-delete-link:hover {
   color: var(--color-error);
 }
+
+/* ---- フッター（全ページ共通） ---- */
+.app-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 24px 20px;
+}
+
+.app-footer-link {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-decoration: underline;
+}
+
+.app-footer-link:hover {
+  color: var(--text);
+}
