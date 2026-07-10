@@ -1,21 +1,16 @@
 'use client';
 
 import { Suspense, useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { useSession } from '@/lib/use-session';
+import { useActiveTeam } from '@/lib/use-active-team';
 import { useAccordion } from '@/lib/use-accordion';
 import AbilityBody from '@/app/components/AbilityBody';
 import ConfirmBox from '@/app/components/ConfirmBox';
-import { teamDisplayName, teamNameOf } from '@/lib/team-display';
+import { teamDisplayName } from '@/lib/team-display';
 import { buildRecordText } from '@/lib/record-text';
 import type { Ability } from '@/lib/ability';
-
-// 保存先候補（自分の行に空セルが無いチーム）
-type SaveCandidate = {
-  teamId: string;
-  teamCallName: string;
-};
 
 const EXAMPLE_TASKS = [
   '走り回る2歳児を紙芝居へ注目させる',
@@ -41,37 +36,9 @@ function HomeContent() {
   const { openItems, toggle: toggleAccordion, reset: resetAccordion } = useAccordion();
   const session = useSession();
   const [copyDone, setCopyDone] = useState(false);
-  const [saveCandidates, setSaveCandidates] = useState<SaveCandidate[]>([]);
+  const { saveCandidates, activeTeam } = useActiveTeam();
   const [confirmSave, setConfirmSave] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const teamId = searchParams.get('team');
-
-  // チームホーム経由（?team=）で入った場合のみ、その値が実際の保存先候補と一致するかを見る
-  const activeTeam = saveCandidates.find((c) => c.teamId === teamId);
-
-  // 保存先候補（自分の行のnickname・relationshipが両方埋まっているチームのみ）を取得
-  useEffect(() => {
-    if (!session) {
-      setSaveCandidates([]);
-      return;
-    }
-    const supabase = createSupabaseBrowser();
-    supabase
-      .from('team_members')
-      .select('team_id, teams(name)')
-      .eq('account_id', session.user.id)
-      .is('revoked_at', null)
-      .not('nickname', 'is', null)
-      .not('relationship', 'is', null)
-      .then(({ data }) => {
-        const candidates: SaveCandidate[] = (data ?? []).map((m) => ({
-          teamId: m.team_id,
-          teamCallName: teamNameOf(m.teams) ?? '',
-        }));
-        setSaveCandidates(candidates);
-      });
-  }, [session]);
 
   // キャンバス背景の描画
   useEffect(() => {
@@ -288,18 +255,20 @@ function HomeContent() {
           <div className="card">
             <div className="card-title">
               <span className="step-badge">2</span>分解・対応の一覧
-              <button className="btn-sub btn-copy" onClick={copyResult}>
-                {copyDone ? 'コピーしました' : 'コピー'}
-              </button>
-              {activeTeam && (
-                <button
-                  className="btn-sub btn-save"
-                  onClick={() => setConfirmSave(true)}
-                  disabled={saving}
-                >
-                  {saving ? '保存中...' : '保存する'}
+              <span className="card-title-actions">
+                {activeTeam && (
+                  <button
+                    className="btn-sub btn-save"
+                    onClick={() => setConfirmSave(true)}
+                    disabled={saving}
+                  >
+                    {saving ? '保存中...' : '保存する'}
+                  </button>
+                )}
+                <button className="btn-sub btn-copy" onClick={copyResult}>
+                  {copyDone ? 'コピーしました' : 'コピー'}
                 </button>
-              )}
+              </span>
             </div>
 
             {!activeTeam && (

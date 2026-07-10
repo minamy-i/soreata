@@ -12,7 +12,7 @@ graph TD
 
     LOGIN --> A_DASH
 
-    A_DASH["チーム一覧  /account\nメアド・チーム一覧の表\n（チーム名・自分のニックネーム・relationship）\n来ている招待・チームを作成する・退会"]
+    A_DASH["マイページ  /account\nメアド・チーム一覧の表\n（チーム名・自分のニックネーム・relationship）\n来ている招待・チームを作成する・退会"]
     A_DASH -->|"空セルの無い行を選択"| TEAM
 
     TEAM["チームページ  /home/[team_id]\nチーム名・自分のニックネーム表示（読み取りのみ）\nメンバー一覧・AI分解記録一覧"]
@@ -44,7 +44,7 @@ graph TD
 ### URL構成
 - `/`：困りごとのAI分解（ゲスト含む全員がアクセス可。保存はチームホーム発の`/?team=[team_id]`からのみ）
 - `/login`：ログイン
-- `/account`：チーム一覧（チーム一覧の表・チーム作成・招待受諾）
+- `/account`：マイページ（チーム一覧の表・チーム作成・招待受諾）
 - `/home/[team_id]`：チームページ（「AI分解する」で`/?team=[team_id]`へ）
 - `/home/[team_id]/record/[id]`：AI分解記録詳細
 - `/home/[team_id]/settings`：チーム設定（削除・招待・owner移譲・Webhook連携。チーム名編集は`/account`のチーム一覧表で行う）

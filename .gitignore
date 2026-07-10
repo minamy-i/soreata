@@ -1,4 +1,5 @@
 gitignores/
+.claude/skills/product-poster-coach/
 .DS_Store
 .env
 .env.local

@@ -7,6 +7,7 @@ import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { teamDisplayName, teamNameOf } from '@/lib/team-display';
 import { isTeamEmpty } from '@/lib/team-empty';
 import { deleteTeamById } from '@/lib/team-delete';
+import PencilIcon from '@/app/components/PencilIcon';
 
 // チーム一覧の1行（マイチーム・協力チームを1つの表で統合表示）
 // 1ユーザ1チームにつき有効な行は最大1つ（team_membersのユニーク制約）なのでteamIdだけで一意
@@ -298,7 +299,7 @@ export default function AccountPage() {
           {value || '未入力'}
         </span>
         <button className="btn-clear" onClick={() => startEdit(row.teamId, field, value ?? '')}>
-          ✎
+          <PencilIcon />
         </button>
       </span>
     );
@@ -343,7 +344,7 @@ export default function AccountPage() {
             className="btn-clear"
             onClick={() => startEdit(row.teamId, 'name', row.teamCallName)}
           >
-            ✎
+            <PencilIcon />
           </button>
         )}
       </span>

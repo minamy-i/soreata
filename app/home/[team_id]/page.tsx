@@ -77,7 +77,7 @@ export default async function TeamPage({
       <div className="card">
         <div className="card-title">
           AI分解の記録
-          <Link href={`/?team=${team_id}`} className="btn-sub">
+          <Link href={`/?team=${team_id}`} className="btn-sub card-title-action">
             AI分解する
           </Link>
         </div>

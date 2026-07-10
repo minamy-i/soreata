@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import GlobalNav from "./components/GlobalNav";
 
@@ -18,7 +19,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <GlobalNav />
+        <Suspense>
+          <GlobalNav />
+        </Suspense>
         {children}
       </body>
     </html>

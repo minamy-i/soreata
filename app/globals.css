@@ -16,6 +16,8 @@
   --bg-owner-highlight: rgba(40, 40, 40, 0.60);
   --bg-table-header: rgba(40, 40, 40, 0.60);
   --bg-card: rgba(64, 64, 64, 0.55);
+  /* 現在地を示す反転表示（グローバルナビのアクティブ状態・チーム内ページタイトル・team-name-tagで共用） */
+  --bg-reversed: rgba(255, 255, 255, 0.90);
   --color-error: #ff8080;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
   --radius-card: 18px;
@@ -81,12 +83,8 @@ body {
   transition: color 0.15s;
 }
 
-.nav-label-short { display: none; }
-
 @media (max-width: 599px) {
   .global-nav-links { gap: 12px; }
-  .nav-label-full { display: none; }
-  .nav-label-short { display: inline; }
 }
 
 .global-nav-link:hover {
@@ -94,7 +92,7 @@ body {
 }
 
 .global-nav-link--active {
-  background: rgba(255, 255, 255, 0.90);
+  background: var(--bg-reversed);
   color: var(--bg);
   border-radius: 6px;
   padding: 4px 10px;
@@ -179,6 +177,11 @@ h1 {
   color: var(--text);
   letter-spacing: 0.04em;
   margin-bottom: 16px;
+}
+
+/* card-title内で、タイトル文字列より後ろにあるボタン等だけを右端へ押し出す */
+.card-title-action {
+  margin-left: auto;
 }
 
 /* ---- テキストエリア ---- */
@@ -269,16 +272,36 @@ button:active {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.btn-copy {
+/* コピー・保存するボタンをまとめて右寄せにする箱。コピーは常に出るため一番右、保存するはその左 */
+.card-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
+}
+
+.btn-copy {
   font-size: 0.78rem;
   padding: 4px 14px;
+}
+
+/* ナビの現在地表示（.page-title）と同じ見た目。「誰のチームか」を常時示す */
+.team-name-tag {
+  display: inline-block;
+  background: var(--bg-reversed);
+  color: var(--bg);
+  border-radius: 4px;
+  /* フォントの都合で文字が箱の上寄りに見えるため、上下のパディングをわずかに非対称にする */
+  padding: 4px 10px 2px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .btn-save {
   font-size: 0.78rem;
   padding: 4px 14px;
-  margin-left: 8px;
 }
 
 .btn-save:disabled {
@@ -535,11 +558,19 @@ a.record-item:hover {
   padding: 8px 0;
 }
 
-/* ---- ページタイトル（チームのホーム・設定・記録詳細で共通） ---- */
+/* ---- ページタイトル（チームのホーム・設定・記録詳細で共通） ----
+   「今どのチーム・チーム内のどこにいるか」を示す現在地表示として反転（白背景・ページ背景色の文字）にする。
+   行高は文字サイズぴったりにして間延びを防ぐ。角の斜めカットは断念し、他のチーム名表示（team-name-link・
+   team-name-tag）と揃えて、ほんの少しだけ丸めた四角にした（詳しい経緯は docs/NOTES.md 参照） */
 .page-title {
+  display: inline-block;
+  background: var(--bg-reversed);
+  color: var(--bg);
+  border-radius: 4px;
+  padding: 6px 14px;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-dim);
+  line-height: 1;
   margin-bottom: 20px;
   letter-spacing: 0.03em;
 }
@@ -724,9 +755,16 @@ a.record-item:hover {
   gap: 6px;
 }
 
+/* 斜めカットは断念し、page-titleと揃えた四角（角はほんの少しだけ丸め）にした。
+   （詳しい経緯は docs/NOTES.md 参照）文字色は他のセル値（.team-cell-value）と揃える */
 .team-name-link {
-  color: var(--text);
-  text-decoration: underline;
+  display: inline-block;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 4px 10px;
+  line-height: 1;
+  color: var(--text-dim);
+  text-decoration: none;
 }
 
 .team-name-disabled {
