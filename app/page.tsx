@@ -226,6 +226,11 @@ export default function Home() {
         <div className="card">
           <div className="card-title">
             <span className="step-badge">1</span>困りごとを入力する
+            {activeTeam && (
+              <span className="team-name-tag card-title-action">
+                {teamDisplayName(activeTeam.teamCallName)}
+              </span>
+            )}
           </div>
           <textarea
             rows={4}
@@ -255,6 +260,11 @@ export default function Home() {
           <div className="card">
             <div className="card-title">
               <span className="step-badge">2</span>提案・対応の一覧
+              {activeTeam && (
+                <span className="team-name-tag card-title-action">
+                  {teamDisplayName(activeTeam.teamCallName)}
+                </span>
+              )}
             </div>
 
             {!activeTeam && (
