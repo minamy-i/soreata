@@ -23,7 +23,7 @@ const EXAMPLE_TASKS = [
 // 保存できない状態（=teamパラメータでチームが確定していない）向けの案内文
 // 「チームホーム起点への一本化」決定（docs/NOTES.md参照）により、
 // このページ単体では保存できない。案内はチーム所属状況で出し分ける。
-const BRIDGE_TEXT_HAS_TEAM = 'このページはお試し用です。保存するには、チームホームの「AI分解する」から開いてください。';
+const BRIDGE_TEXT_HAS_TEAM = 'このページはお試し用です。保存するには、チームホームの「AI提案へ」から開いてください。';
 const BRIDGE_TEXT_NO_TEAM = '次回以降の結果は、登録後のチーム作成・所属により保存できます。';
 
 export default function Home() {
@@ -219,7 +219,7 @@ export default function Home() {
           <h1>それ！できて当たり前？</h1>
           <p className="subtitle">
             あれ？どうしてできないんだろう。<br className="br-sp" />
-            行動を前提能力に分解し、対応のヒントを提案します。
+            困りごとに必要な力と、対応のヒントを提案します。
           </p>
         </header>
 
@@ -229,7 +229,7 @@ export default function Home() {
           </div>
           <textarea
             rows={4}
-            placeholder="行動や指示、分解に必要な年齢や特徴を書いてください。"
+            placeholder="行動や指示、AIの提案に必要な年齢や特徴を書いてください。"
             value={task}
             onChange={e => setTask(e.target.value)}
           />
@@ -243,10 +243,10 @@ export default function Home() {
           </div>
           <div className="action-row">
             <button className="btn-main" onClick={decompose} disabled={loading}>
-              分解する
+              AIに聞く
             </button>
             <button className="btn-sub" onClick={resetAll}>クリア</button>
-            {loading && <span className="loading">分解中...</span>}
+            {loading && <span className="loading">考え中...</span>}
           </div>
           {error && <div className="error-msg">{error}</div>}
         </div>
@@ -254,41 +254,13 @@ export default function Home() {
         {abilities.length > 0 && (
           <div className="card">
             <div className="card-title">
-              <span className="step-badge">2</span>分解・対応の一覧
-              <span className="card-title-actions">
-                {activeTeam && (
-                  <button
-                    className="btn-sub btn-save"
-                    onClick={() => setConfirmSave(true)}
-                    disabled={saving}
-                  >
-                    {saving ? '保存中...' : '保存する'}
-                  </button>
-                )}
-                <button className="btn-sub btn-copy" onClick={copyResult}>
-                  {copyDone ? 'コピーしました' : 'コピー'}
-                </button>
-              </span>
+              <span className="step-badge">2</span>提案・対応の一覧
             </div>
 
             {!activeTeam && (
               <p className="guest-note">
                 {session && saveCandidates.length > 0 ? BRIDGE_TEXT_HAS_TEAM : BRIDGE_TEXT_NO_TEAM}
               </p>
-            )}
-
-            {confirmSave && activeTeam && (
-              <div className="card-section">
-                <ConfirmBox
-                  message={`${teamDisplayName(activeTeam.teamCallName)}に保存しますか？`}
-                  confirmLabel="保存する"
-                  busyLabel="保存中..."
-                  busy={saving}
-                  confirmClass="btn-main"
-                  onConfirm={() => saveResult(activeTeam.teamId)}
-                  onCancel={() => setConfirmSave(false)}
-                />
-              </div>
             )}
 
             {abilities.map((ability, i) => (
@@ -301,6 +273,31 @@ export default function Home() {
                 {openItems.has(i) && <AbilityBody ability={ability} />}
               </div>
             ))}
+
+            {confirmSave && activeTeam ? (
+              <div className="card-section confirm-panel">
+                <ConfirmBox
+                  message={`${teamDisplayName(activeTeam.teamCallName)}に保存しますか？`}
+                  confirmLabel="保存する"
+                  busyLabel="保存中..."
+                  busy={saving}
+                  confirmClass="btn-sub"
+                  onConfirm={() => saveResult(activeTeam.teamId)}
+                  onCancel={() => setConfirmSave(false)}
+                />
+              </div>
+            ) : (
+              <div className="action-row">
+                {activeTeam && (
+                  <button className="btn-main" onClick={() => setConfirmSave(true)}>
+                    提案を保存する
+                  </button>
+                )}
+                <button className="btn-sub" onClick={copyResult}>
+                  {copyDone ? 'コピーしました' : 'コピー'}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

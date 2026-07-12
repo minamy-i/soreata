@@ -16,7 +16,7 @@ graph TD
     A_DASH -->|"空セルの無い行を選択"| TEAM
 
     TEAM["チームページ  /home/[team_id]\nチーム名・自分のニックネーム表示（読み取りのみ）\nメンバー一覧・AI分解記録一覧"]
-    TEAM -->|"「AI分解する」  /?team=[team_id]"| AI
+    TEAM -->|"「AI提案へ」  /?team=[team_id]"| AI
     TEAM --> AI_REC["AI分解の記録一覧"]
     AI_REC --> RECORD["記録詳細  /home/[team_id]/record/[id]\n外部ツールへの投稿ボタン（Webhook設定済みの場合）"]
     RECORD --> CONF["能力確認日\n入力：全員可・変更：当人権限者のみ"]
@@ -45,6 +45,6 @@ graph TD
 - `/`：困りごとのAI分解（ゲスト含む全員がアクセス可。保存はチームホーム発の`/?team=[team_id]`からのみ）
 - `/login`：ログイン
 - `/account`：マイページ（チーム一覧の表・チーム作成・招待受諾）
-- `/home/[team_id]`：チームページ（「AI分解する」で`/?team=[team_id]`へ）
+- `/home/[team_id]`：チームページ（「AI提案へ」で`/?team=[team_id]`へ）
 - `/home/[team_id]/record/[id]`：AI分解記録詳細
 - `/home/[team_id]/settings`：チーム設定（削除・招待・owner移譲・Webhook連携。チーム名編集は`/account`のチーム一覧表で行う）

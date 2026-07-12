@@ -7,7 +7,7 @@ import { ActiveTeamProvider } from "@/lib/use-active-team";
 
 export const metadata: Metadata = {
   title: "それ！できて当たり前？",
-  description: "行動を前提能力に分解し、対応のヒントを提案します。",
+  description: "困りごとに必要な力と、対応のヒントを提案します。",
 };
 
 export default function RootLayout({

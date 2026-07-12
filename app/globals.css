@@ -166,7 +166,16 @@ h1 {
 
 /* 1つのカード内に複数セクション（確認ダイアログ・一覧など）を積む時の区切り余白 */
 .card-section {
+  margin-top: 14px;
   margin-bottom: 20px;
+}
+
+/* 保存確認を独立した箱に見せる（テキストエリアと同じ枠・背景を流用） */
+.confirm-panel {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-inner);
+  padding: 16px 18px;
 }
 
 .card-title {
@@ -270,19 +279,6 @@ button:active {
 
 .btn-sub:hover {
   background: rgba(255, 255, 255, 0.12);
-}
-
-/* コピー・保存するボタンをまとめて右寄せにする箱。コピーは常に出るため一番右、保存するはその左 */
-.card-title-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-}
-
-.btn-copy {
-  font-size: 0.78rem;
-  padding: 4px 14px;
 }
 
 /* ナビの現在地表示（.page-title）と同じ見た目。「誰のチームか」を常時示す */
