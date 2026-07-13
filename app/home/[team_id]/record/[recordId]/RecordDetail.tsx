@@ -107,99 +107,104 @@ export default function RecordDetail({
     <div className="container">
       <div className="page-header">
         <p className="page-title">{teamDisplayName(teamCallName)}の記録詳細</p>
-        <Link href={`/home/${teamId}`} className="btn-sub">ホームへ戻る</Link>
+        <Link href={`/home/${teamId}`} className="text-link">このチームのホームへ</Link>
       </div>
 
       <div className="card">
+        <div className="card-title">困りごと</div>
         <p className="record-meta-date">保存日：{savedDate}</p>
         <p className="record-task-text">{decomp.task_text}</p>
-      </div>
 
-      <div className="card">
-        <div className="card-title">能力一覧</div>
-        <ul className="ability-list">
-          {abilities.map((ability, i) => (
-            <li key={i} className="accordion-item">
-              <button
-                className="accordion-header"
-                onClick={() => toggleAccordion(i)}
-              >
-                <span className="accordion-square">◻︎</span>
-                <span className="accordion-title">{ability.title}</span>
-                <div className="confirmed-field" onClick={e => e.stopPropagation()}>
-                  <span className="confirmed-label">確認日</span>
-                  <input
-                    type="date"
-                    className="date-input"
-                    value={ability.confirmed_at ?? ''}
-                    onChange={e => updateConfirmedAt(i, e.target.value || null)}
-                  />
-                  {ability.confirmed_at && (
-                    <button
-                      className="btn-clear"
-                      onClick={() => updateConfirmedAt(i, null)}
-                      title="未確認に戻す"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-                <span className={`accordion-icon${openItems.has(i) ? ' open' : ''}`}>▼</span>
-              </button>
-              {openItems.has(i) && <AbilityBody ability={ability} />}
-            </li>
-          ))}
-        </ul>
-        {error && <div className="error-msg">{error}</div>}
-      </div>
-
-      {webhookConfigured && (
-        <div className="card">
-          {!confirmPost ? (
-            <div className="action-row">
-              <button className="btn-sub" onClick={handlePostClick} disabled={posting}>
-                {posting ? '投稿中...' : '外部ツールへ投稿'}
-              </button>
-              {lastPostedAt && (
-                <span className="webhook-posted-note">
-                  前回投稿：{new Date(lastPostedAt).toLocaleString('ja-JP')}
-                </span>
-              )}
-            </div>
-          ) : (
-            <ConfirmBox
-              message="前回投稿済みです。もう一度投稿しますか？"
-              confirmLabel="投稿する"
-              busyLabel="投稿中..."
-              busy={posting}
-              confirmClass="btn-sub"
-              onConfirm={postWebhook}
-              onCancel={() => setConfirmPost(false)}
-            />
-          )}
-          {postError && <div className="error-msg">{postError}</div>}
+        <div className="card-section">
+          <div className="card-title">能力一覧</div>
+          <ul className="ability-list">
+            {abilities.map((ability, i) => (
+              <li key={i} className="accordion-item">
+                <button
+                  className="accordion-header"
+                  onClick={() => toggleAccordion(i)}
+                >
+                  <span className="accordion-square">◻︎</span>
+                  <span className="accordion-title">{ability.title}</span>
+                  <div className="confirmed-field" onClick={e => e.stopPropagation()}>
+                    <span className="confirmed-label">確認日</span>
+                    <input
+                      type="date"
+                      className="date-input"
+                      value={ability.confirmed_at ?? ''}
+                      onChange={e => updateConfirmedAt(i, e.target.value || null)}
+                    />
+                    {ability.confirmed_at && (
+                      <button
+                        className="btn-clear"
+                        onClick={() => updateConfirmedAt(i, null)}
+                        title="未確認に戻す"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                  <span className={`accordion-icon${openItems.has(i) ? ' open' : ''}`}>▼</span>
+                </button>
+                {openItems.has(i) && <AbilityBody ability={ability} />}
+              </li>
+            ))}
+          </ul>
+          {error && <div className="error-msg">{error}</div>}
         </div>
-      )}
 
-      {canDelete && (
-        <div className="card">
-          {!confirmDelete ? (
-            <button className="btn-danger" onClick={() => setConfirmDelete(true)}>
-              この記録を削除する
-            </button>
-          ) : (
-            <ConfirmBox
-              message="本当に削除しますか？この操作は取り消せません。"
-              confirmLabel="削除する"
-              busyLabel="削除中..."
-              busy={deleting}
-              confirmClass="btn-danger"
-              onConfirm={deleteRecord}
-              onCancel={() => setConfirmDelete(false)}
-            />
-          )}
-        </div>
-      )}
+        {(webhookConfigured || canDelete) && (
+          <div className="card-section">
+            {/* 投稿・削除どちらも未確認中のときだけ、トリガーボタンを横並びで表示する。
+                どちらかを押すと、そのボタンだけがConfirmBoxに切り替わる（排他表示）。
+                記録全体（困りごと＋能力一覧）への操作のため、最後尾に置く */}
+            {!confirmPost && !confirmDelete && (
+              <div className="action-row">
+                {webhookConfigured && (
+                  <button className="btn-sub" onClick={handlePostClick} disabled={posting}>
+                    {posting ? '投稿中...' : '外部ツールへ投稿'}
+                  </button>
+                )}
+                {lastPostedAt && (
+                  <span className="webhook-posted-note">
+                    前回投稿：{new Date(lastPostedAt).toLocaleDateString('ja-JP')}
+                  </span>
+                )}
+                {canDelete && (
+                  <button className="btn-danger push-right" onClick={() => setConfirmDelete(true)}>
+                    この記録を削除する
+                  </button>
+                )}
+              </div>
+            )}
+
+            {confirmPost && (
+              <ConfirmBox
+                message="前回投稿済みです。もう一度投稿しますか？"
+                confirmLabel="投稿する"
+                busyLabel="投稿中..."
+                busy={posting}
+                confirmClass="btn-sub"
+                onConfirm={postWebhook}
+                onCancel={() => setConfirmPost(false)}
+              />
+            )}
+            {postError && !confirmDelete && <div className="error-msg">{postError}</div>}
+
+            {confirmDelete && (
+              <ConfirmBox
+                message="本当に削除しますか？この操作は取り消せません。"
+                confirmLabel="削除する"
+                busyLabel="削除中..."
+                busy={deleting}
+                confirmClass="btn-danger"
+                onConfirm={deleteRecord}
+                onCancel={() => setConfirmDelete(false)}
+              />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

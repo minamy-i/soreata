@@ -123,7 +123,7 @@ export default function SettingsForm({
     <div className="container">
       <div className="page-header">
         <p className="page-title">{teamDisplayName(teamCallName)}の設定</p>
-        <Link href={`/home/${teamId}`} className="btn-sub">ホームへ戻る</Link>
+        <Link href={`/home/${teamId}`} className="text-link">このチームのホームへ</Link>
       </div>
 
       <div className="card">
@@ -153,7 +153,7 @@ export default function SettingsForm({
         </div>
         <div className="action-row">
           <button className="btn-main" onClick={saveWebhook} disabled={saving}>
-            {saved ? '保存しました' : saving ? '保存中...' : '保存する'}
+            {saved ? '設定しました' : saving ? '保存中...' : '設定する'}
           </button>
         </div>
       </div>

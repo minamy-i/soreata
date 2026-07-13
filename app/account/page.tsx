@@ -298,10 +298,7 @@ export default function AccountPage() {
 
     return (
       <span className="team-cell-with-edit">
-        <span
-          className={value ? 'team-cell-value' : 'team-cell-empty'}
-          onClick={() => startEdit(row.teamId, field, value ?? '')}
-        >
+        <span className={value ? 'team-cell-value' : 'team-cell-empty'}>
           {value || '未入力'}
         </span>
         <button className="btn-clear" onClick={() => startEdit(row.teamId, field, value ?? '')}>
@@ -311,10 +308,9 @@ export default function AccountPage() {
     );
   }
 
-  // チーム名セル：owner編集可（編集対象は呼び名のみ）＋空セルが無ければチームページへのリンク
+  // チーム名セル：owner編集可（編集対象は呼び名のみ）。移動は行末の「移動」リンクが担う
   function renderNameCell(row: TeamRow) {
     const isEditingThis = editing?.teamId === row.teamId && editing.field === 'name';
-    const hasEmptyCell = !row.nickname || !row.relationship;
     const displayName = teamDisplayName(row.teamCallName);
 
     if (isEditingThis) {
@@ -323,13 +319,7 @@ export default function AccountPage() {
 
     return (
       <span className="team-cell-with-edit">
-        {hasEmptyCell ? (
-          <span className="team-name-disabled">{displayName}</span>
-        ) : (
-          <Link href={`/home/${row.teamId}`} className="team-name-link">
-            {displayName}
-          </Link>
-        )}
+        <span className="team-cell-value">{displayName}</span>
         {row.role === 'owner' && (
           <button
             className="btn-clear"
@@ -370,13 +360,14 @@ export default function AccountPage() {
           <p className="empty-note">未入力の項目があります。必ず入力してください</p>
         )}
         {rows.length > 0 && (
-          <p className="empty-note">チーム名をクリックすると、チームのホームに行きます</p>
+          <p className="empty-note">「移動」を押すと、チームのホームに行きます</p>
         )}
         {(rows.length > 0 || creating) && (
           <div className="team-table-wrap">
             <table className="team-table">
               <thead>
                 <tr>
+                  <th></th>
                   <th>チーム名</th>
                   <th>ニックネーム</th>
                   <th>関係</th>
@@ -386,13 +377,20 @@ export default function AccountPage() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.teamId}>
+                    <td>
+                      {row.nickname && row.relationship && (
+                        <Link href={`/home/${row.teamId}`} className="text-link">
+                          移動
+                        </Link>
+                      )}
+                    </td>
                     <td>{renderNameCell(row)}</td>
                     <td>{renderMemberCell(row, 'nickname')}</td>
                     <td>{renderMemberCell(row, 'relationship')}</td>
                     <td>
                       {row.role === 'owner' && row.isDeletable && (
                         <button
-                          className="team-delete-link"
+                          className="btn-danger btn-danger-sm"
                           onClick={() => deleteTeam(row.teamId)}
                           disabled={deletingTeamId === row.teamId}
                         >
@@ -404,6 +402,7 @@ export default function AccountPage() {
                 ))}
                 {creating && (
                   <tr>
+                    <td></td>
                     <td>
                       <input
                         autoFocus
@@ -445,7 +444,7 @@ export default function AccountPage() {
                         確定
                       </button>
                       <button
-                        className="btn-clear"
+                        className="btn-sub btn-save"
                         onClick={() => {
                           setCreating(false);
                           setNewRow({ name: '', nickname: '', relationship: '' });
@@ -463,7 +462,7 @@ export default function AccountPage() {
 
         {!creating && (
           <div className="action-row">
-            <button className="btn-sub" onClick={() => setCreating(true)}>
+            <button className="btn-main" onClick={() => setCreating(true)}>
               チームを作成する
             </button>
           </div>

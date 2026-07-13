@@ -227,7 +227,7 @@ export default function Home() {
           <div className="card-title">
             <span className="step-badge">1</span>困りごとを入力する
             {activeTeam && (
-              <span className="team-name-tag card-title-action">
+              <span className="team-name-tag push-right">
                 {teamDisplayName(activeTeam.teamCallName)}
               </span>
             )}
@@ -261,7 +261,7 @@ export default function Home() {
             <div className="card-title">
               <span className="step-badge">2</span>提案・対応の一覧
               {activeTeam && (
-                <span className="team-name-tag card-title-action">
+                <span className="team-name-tag push-right">
                   {teamDisplayName(activeTeam.teamCallName)}
                 </span>
               )}

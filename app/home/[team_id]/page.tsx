@@ -43,24 +43,23 @@ export default async function TeamPage({
       <div className="page-header">
         <p className="page-title">{teamDisplayName(team.name)}のホーム</p>
         {canSeeSettings && (
-          <Link href={`/home/${team_id}/settings`} className="btn-sub">
-            チーム設定
+          <Link href={`/home/${team_id}/settings`} className="text-link">
+            このチームの設定
           </Link>
         )}
       </div>
-      <p className="record-meta-date">
-        あなたの表示：{myMembership.nickname}（{myMembership.relationship}）
-      </p>
-
       <div className="card">
-        <div className="card-title">メンバー一覧</div>
-        <ul className="record-list">
+        <div className="card-title">メンバー</div>
+        <p className="record-meta-date">
+          あなたの表示：{myMembership.nickname}（{myMembership.relationship}）
+        </p>
+        <ul className="record-list member-list">
           {(members ?? []).map((m, i) => {
             // 招待受諾直後はnickname・relationshipが未入力（/accountで入力するまでの一時状態）
             const isPending = !m.nickname || !m.relationship;
             return (
               <li key={i}>
-                <span className={`record-item${m.role === 'owner' ? ' record-item-owner' : ''}`}>
+                <span className={`member-row${m.role === 'owner' ? ' member-row-owner' : ''}`}>
                   <span className="record-task">
                     {isPending ? '協力者入室待ち' : m.nickname}
                   </span>
@@ -77,7 +76,7 @@ export default async function TeamPage({
       <div className="card">
         <div className="card-title">
           AI提案の記録
-          <Link href={`/?team=${team_id}`} className="btn-sub card-title-action">
+          <Link href={`/?team=${team_id}`} className="text-link push-right">
             AI提案へ
           </Link>
         </div>
