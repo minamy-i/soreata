@@ -13,7 +13,6 @@
   --text-placeholder: rgba(255, 255, 255, 0.35);
   --bg-disabled: rgba(255, 255, 255, 0.35);
   --text-faint: rgba(255, 255, 255, 0.35);
-  --bg-owner-highlight: rgba(40, 40, 40, 0.60);
   --bg-card: rgba(64, 64, 64, 0.55);
   /* 現在地を示す反転表示（グローバルナビのアクティブ状態・チーム内ページタイトル・team-name-tagで共用） */
   --bg-reversed: rgba(255, 255, 255, 0.90);
@@ -196,18 +195,25 @@ h1 {
   margin-left: auto;
 }
 
+/* ---- 入力欄の共通土台（テキストエリア・フォーム入力・表セル編集・確認日欄で共用） ---- */
+textarea,
+.form-input,
+.team-cell-input,
+.date-input {
+  background: var(--bg-input);
+  border-radius: var(--radius-inner);
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+}
+
 /* ---- テキストエリア ---- */
 textarea {
   width: 100%;
-  background: var(--bg-input);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius-inner);
   padding: 14px 16px;
-  font-family: inherit;
   font-size: 0.97rem;
-  color: var(--text);
   resize: vertical;
-  outline: none;
   transition: border-color 0.2s;
 }
 
@@ -469,14 +475,9 @@ button:active {
 
 .form-input {
   width: 100%;
-  background: var(--bg-input);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius-inner);
   padding: 12px 16px;
-  font-family: inherit;
   font-size: 0.97rem;
-  color: var(--text);
-  outline: none;
   transition: border-color 0.2s;
 }
 
@@ -649,20 +650,15 @@ a.record-item:hover {
   /* ブラウザ標準の枠・背景（appearance）を消し、二重枠にならないようにする */
   -webkit-appearance: none;
   appearance: none;
-  background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: var(--radius-inner);
   padding: 4px 8px;
-  font-family: inherit;
   font-size: 0.82rem;
   /* bodyのline-height: 1.75を継承すると1行の入力欄が縦に膨らむため、1に固定する */
   line-height: 1;
-  color: var(--text);
   cursor: pointer;
 }
 
 .date-input:focus {
-  outline: none;
   border-color: var(--border-strong);
 }
 
@@ -774,14 +770,9 @@ a.record-item:hover {
 .team-cell-input {
   width: 100%;
   min-width: 90px;
-  background: var(--bg-input);
   border: 1.5px solid var(--border-strong);
-  border-radius: var(--radius-inner);
   padding: 6px 8px;
-  font-family: inherit;
   font-size: 0.88rem;
-  color: var(--text);
-  outline: none;
 }
 
 .team-cell-with-edit {
