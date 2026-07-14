@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { teamDisplayName } from "@/lib/team-display";
 import { requireMember } from "@/lib/require-member";
+import LocationPinIcon from "@/app/components/LocationPinIcon";
 
 export default async function TeamPage({
   params,
@@ -41,7 +42,7 @@ export default async function TeamPage({
   return (
     <div className="container">
       <div className="page-header">
-        <p className="page-title">{teamDisplayName(team.name)}のホーム</p>
+        <p className="page-title"><LocationPinIcon />{teamDisplayName(team.name)}のホーム</p>
         {canSeeSettings && (
           <Link href={`/home/${team_id}/settings`} className="text-link">
             このチームの設定

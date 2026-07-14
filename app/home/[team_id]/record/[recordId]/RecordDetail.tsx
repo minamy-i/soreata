@@ -7,6 +7,7 @@ import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { useAccordion } from '@/lib/use-accordion';
 import AbilityBody from '@/app/components/AbilityBody';
 import ConfirmBox from '@/app/components/ConfirmBox';
+import LocationPinIcon from '@/app/components/LocationPinIcon';
 import { teamDisplayName } from '@/lib/team-display';
 import type { Ability } from '@/lib/ability';
 
@@ -106,7 +107,7 @@ export default function RecordDetail({
   return (
     <div className="container">
       <div className="page-header">
-        <p className="page-title">{teamDisplayName(teamCallName)}の記録詳細</p>
+        <p className="page-title"><LocationPinIcon />{teamDisplayName(teamCallName)}の記録詳細</p>
         <Link href={`/home/${teamId}`} className="text-link">このチームのホームへ</Link>
       </div>
 

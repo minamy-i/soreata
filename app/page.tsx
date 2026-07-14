@@ -8,6 +8,7 @@ import { useActiveTeam } from '@/lib/use-active-team';
 import { useAccordion } from '@/lib/use-accordion';
 import AbilityBody from '@/app/components/AbilityBody';
 import ConfirmBox from '@/app/components/ConfirmBox';
+import LocationPinIcon from '@/app/components/LocationPinIcon';
 import { teamDisplayName } from '@/lib/team-display';
 import { buildRecordText } from '@/lib/record-text';
 import type { Ability } from '@/lib/ability';
@@ -228,6 +229,7 @@ export default function Home() {
             <span className="step-badge">1</span>困りごとを入力する
             {activeTeam && (
               <span className="team-name-tag push-right">
+                <LocationPinIcon />
                 {teamDisplayName(activeTeam.teamCallName)}
               </span>
             )}

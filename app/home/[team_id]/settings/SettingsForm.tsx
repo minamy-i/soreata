@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { teamDisplayName } from '@/lib/team-display';
 import { deleteTeamById } from '@/lib/team-delete';
+import LocationPinIcon from '@/app/components/LocationPinIcon';
 
 type WebhookPlatform = 'slack' | 'discord';
 type Invitation = { id: string; invited_email: string };
@@ -122,7 +123,7 @@ export default function SettingsForm({
   return (
     <div className="container">
       <div className="page-header">
-        <p className="page-title">{teamDisplayName(teamCallName)}の設定</p>
+        <p className="page-title"><LocationPinIcon />{teamDisplayName(teamCallName)}の設定</p>
         <Link href={`/home/${teamId}`} className="text-link">このチームのホームへ</Link>
       </div>
 

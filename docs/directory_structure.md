@@ -1,5 +1,5 @@
 soreata全体のファイル構成。`.DS_Store`（macOSのゴミファイル）・`node_modules`・`.git`・`.next`（自動生成の依存関係）は対象外。
-`gitignores/`は個人の作業用フォルダのため中身は省略する。
+`gitignores/`・`.claude/`は個人の作業用フォルダのため中身は省略する。
 
 ```mermaid
 graph LR
@@ -68,6 +68,7 @@ graph LR
     DOCS --> DOCS_DIRSTRUCT["directory_structure.md\nこのファイル"]
 
     ROOT --> GITIGNORES["gitignores/\n個人の作業用フォルダ（中身は省略）"]
+    ROOT --> CLAUDEDIR[".claude/\n個人用スキル置き場（中身は省略）"]
     ROOT --> PUBLIC["public/\n公開用ファイルの置き場（現在は空）"]
 
     ROOT --> PKGJSON["package.json\n依存関係とスクリプト定義"]
@@ -86,5 +87,5 @@ graph LR
     class LIB,LIB_ABILITY,LIB_APIRES,LIB_PROMPT,LIB_RECORDTEXT,LIB_REQUIREMEMBER,LIB_SBADMIN,LIB_SBBROWSER,LIB_SBSERVER,LIB_TEAMDELETE,LIB_TEAMDISPLAY,LIB_TEAMEMPTY,LIB_TEAMMEMBERS,LIB_USEACCORDION,LIB_USEACTIVETEAM,LIB_USESESSION libStyle
     class DOCS,DOCS_SPEC,DOCS_NEXT,DOCS_NOTES,DOCS_DATASTRUCT,DOCS_DATADIAGRAM,DOCS_SCHEMA,DOCS_SCREENTREE,DOCS_DIRSTRUCT docsStyle
     class PKGJSON,PKGLOCK,NEXTCONFIG,NEXTENVD,TSCONFIG,TSBUILDINFO,VERCELJSON,VERCELDIR,ENVFILES,CLAUDEMD,READMEMD otherStyle
-    class GITIGNORES,PUBLIC ignoredStyle
+    class GITIGNORES,CLAUDEDIR,PUBLIC ignoredStyle
 ```
