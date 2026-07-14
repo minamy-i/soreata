@@ -2,6 +2,26 @@
 
 ---
 
+## アカウント削除：hard delete／soft deleteでAuthユーザー削除を分岐
+
+日時：2026-07-14
+
+結論：
+退会（アカウント削除）の実装で、`accounts.id`が`auth.users(id) on delete cascade`のため、Authユーザーを通常のhard deleteで消すと、参照が残っている場合（`teams.created_by`・`team_members.account_id`等）にFK違反でカスケード削除自体が失敗することが分かった。
+判定は、team_members.account_idの全行（revoked_at問わず）をサービスロールキー経由でカウントして行う（RLS越しには除名済み等の履歴行が本人からは見えないため、サーバー側判定が必須）。
+- 0件（一度も行が無い）：Authユーザーをhard delete。accounts行はON DELETE CASCADEで自動的に消える
+- 1件以上（履歴が残っている）：accounts行を論理削除（deleted_at・email匿名化）した上で、Authユーザーはsoft delete（`admin.deleteUser(id, true)`）にする。行自体は残るためFK違反を起こさず、ログインだけ不可になる。GoTrueが内部でemailも書き換えるため、同じGoogleアカウントで再登録しても新しいUUIDの別人として再スタートする
+
+連動：
+- 実装：`app/api/account/delete/route.ts`（新規）、`app/account/page.tsx`（退会ボタンの確認フロー）
+- 当人権限移譲・協力者除名がまだ未実装のため、soft delete分岐（履歴ありパターン）は今回UI操作だけでは再現・検証できていない（チームを抜ける・除名される手段がまだ無く、team_membersの行がrevoked_atされた状態を作れないため）。これらの機能を実装する際、実装後に必ずこの分岐を実機で検証すること
+- 検証済み：hard delete側（一度もチームに関わっていない新規アカウントの即削除）は実機で確認済み
+
+不採用案：
+- 両パターンともhard deleteで統一する：FK制約（`teams.created_by`・`team_members.account_id`等のRESTRICT）により、履歴が残っているアカウントの削除処理自体がエラーで失敗するため不採用
+
+---
+
 ## ボタンの色・サイズ・枠線を2軸の基準で統一する
 
 日時：2026-07-13

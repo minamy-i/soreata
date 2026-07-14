@@ -177,6 +177,6 @@ decompositionsの確認日（confirmed_at）を協力者が更新できる件は
 - AI分析記録は編集不可。能力確認日（confirmed_at）・外部ツール投稿日時（posted_at）のみ後から更新可。
 
 - チーム削除時は、team_members・decompositions・invitations・ownership_transfersのteam_id外部キーにON DELETE CASCADEを設定し、関連行を自動的に削除する。
-- accounts の削除は2パターンに分かれる。
-  - team_membersの行が過去も含めて一度も無い（teams.created_byの参照も無い）：FKの参照が存在しないため、accounts行を物理削除＋Supabase Authユーザー削除する
-  - 過去にteam_membersの行があった（現在は0件でも履歴が残っている）：物理削除するとteams.created_by・team_membersの履歴行がFKで退会をブロックするため、従来通りdeleted_atで論理削除し、退会時にemailを匿名化する
+- accounts の削除は2パターンに分かれる。判定はteam_members.account_idの全行（revoked_at問わず）をサービスロールキー経由で数えて行う（RLS越しには履歴行が見えないため）。
+  - team_membersの行が過去も含めて一度も無い（teams.created_byの参照も無い）：FKの参照が存在しないため、Authユーザーをhard delete（accounts行はauth.usersのON DELETE CASCADEで自動的に消える）
+  - 過去にteam_membersの行があった（現在は0件でも履歴が残っている）：accounts行を物理削除するとteams.created_by・team_membersの履歴行がFKでブロックされるため、deleted_atで論理削除しemailを匿名化する。Authユーザーはhard deleteせずsoft delete（shouldSoftDelete: true）にする（行を残したままログインのみ不可にする。hard deleteだとaccounts行への参照でFK違反になるため）

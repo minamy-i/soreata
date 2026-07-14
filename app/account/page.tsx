@@ -8,6 +8,7 @@ import { teamDisplayName, teamNameOf } from '@/lib/team-display';
 import { isTeamEmpty } from '@/lib/team-empty';
 import { deleteTeamById } from '@/lib/team-delete';
 import PencilIcon from '@/app/components/PencilIcon';
+import ConfirmBox from '@/app/components/ConfirmBox';
 
 // チーム一覧の1行（マイチーム・協力チームを1つの表で統合表示）
 // 1ユーザ1チームにつき有効な行は最大1つ（team_membersのユニーク制約）なのでteamIdだけで一意
@@ -60,6 +61,11 @@ export default function AccountPage() {
 
   // チーム削除処理中フラグ（連打防止）
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
+
+  // アカウント削除（退会）の確認・処理中フラグ
+  const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState('');
 
   useEffect(() => {
     const supabase = createSupabaseBrowser();
@@ -252,6 +258,24 @@ export default function AccountPage() {
     }
     setRows((rs) => rs.filter((r) => r.teamId !== teamId));
     setDeletingTeamId(null);
+  }
+
+  // 退会：team_membersに自分の行が0件の場合のみボタンが出る。判定・削除本体はサーバー側（app/api/account/delete）で行う
+  async function deleteAccount() {
+    setDeletingAccount(true);
+    setDeleteAccountError('');
+    try {
+      const res = await fetch('/api/account/delete', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? '削除に失敗しました');
+
+      const supabase = createSupabaseBrowser();
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch (err) {
+      setDeleteAccountError(err instanceof Error ? err.message : '削除に失敗しました');
+      setDeletingAccount(false);
+    }
   }
 
   async function signOut() {
@@ -493,10 +517,23 @@ export default function AccountPage() {
 
       {rows.length === 0 && (
         <div className="card">
-          {/* 実処理は次タスク（アカウント削除実装）。今回は表示条件のみ */}
-          <button className="btn-danger" onClick={() => {}}>
-            アカウントを削除する
-          </button>
+          {!confirmDeleteAccount && (
+            <button className="btn-danger" onClick={() => setConfirmDeleteAccount(true)}>
+              アカウントを削除する
+            </button>
+          )}
+          {confirmDeleteAccount && (
+            <ConfirmBox
+              message="本当にアカウントを削除しますか？この操作は取り消せません。"
+              confirmLabel="削除する"
+              busyLabel="削除中..."
+              busy={deletingAccount}
+              confirmClass="btn-danger"
+              onConfirm={deleteAccount}
+              onCancel={() => setConfirmDeleteAccount(false)}
+            />
+          )}
+          {deleteAccountError && <div className="error-msg">{deleteAccountError}</div>}
         </div>
       )}
 
