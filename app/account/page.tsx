@@ -62,6 +62,10 @@ export default function AccountPage() {
   // チーム削除処理中フラグ（連打防止）
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
 
+  // 協力者の自己脱退：確認中の行・処理中フラグ（連打防止）
+  const [confirmingLeaveTeamId, setConfirmingLeaveTeamId] = useState<string | null>(null);
+  const [leavingTeamId, setLeavingTeamId] = useState<string | null>(null);
+
   // アカウント削除（退会）の確認・処理中フラグ
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -214,6 +218,7 @@ export default function AccountPage() {
 
   // 招待の受諾：team_membersに自分の行を作り、invitationsの該当行を消す
   async function acceptInvitation(inv: InvitationRow) {
+    setConfirmingLeaveTeamId(null); // 別の操作に移るため、脱退確認中の行があれば取消と同じ扱いにする
     setJoiningId(inv.id);
     setError('');
     try {
@@ -247,6 +252,7 @@ export default function AccountPage() {
 
   // 空チームの即削除（確認ダイアログなし。isDeletable行のみボタンが出るため空チーム前提）
   async function deleteTeam(teamId: string) {
+    setConfirmingLeaveTeamId(null); // 別の操作に移るため、脱退確認中の行があれば取消と同じ扱いにする
     setDeletingTeamId(teamId);
     setError('');
     const supabase = createSupabaseBrowser();
@@ -258,6 +264,27 @@ export default function AccountPage() {
     }
     setRows((rs) => rs.filter((r) => r.teamId !== teamId));
     setDeletingTeamId(null);
+  }
+
+  // 協力者の自己脱退：自分の行にrevoked_atをセットする（hard deleteしない。owner移譲の旧owner行と同じ扱い）
+  // 当人権限者の承諾は不要、即時・自己完結の操作
+  async function leaveTeam(teamId: string) {
+    setLeavingTeamId(teamId);
+    setError('');
+    const supabase = createSupabaseBrowser();
+    const { error: updateError } = await supabase
+      .from('team_members')
+      .update({ revoked_at: new Date().toISOString() })
+      .eq('team_id', teamId)
+      .eq('account_id', userId);
+    if (updateError) {
+      setError('脱退に失敗しました');
+      setLeavingTeamId(null);
+      return;
+    }
+    setRows((rs) => rs.filter((r) => r.teamId !== teamId));
+    setConfirmingLeaveTeamId(null);
+    setLeavingTeamId(null);
   }
 
   // 退会：team_membersに自分の行が0件の場合のみボタンが出る。判定・削除本体はサーバー側（app/api/account/delete）で行う
@@ -286,6 +313,7 @@ export default function AccountPage() {
 
   // セル編集の開始（3種類のセルで共通）
   function startEdit(teamId: string, field: EditField, value: string) {
+    setConfirmingLeaveTeamId(null); // 別の操作に移るため、脱退確認中の行があれば取消と同じ扱いにする
     setEditing({ teamId, field });
     setEditValue(value);
   }
@@ -364,6 +392,9 @@ export default function AccountPage() {
     );
   }
 
+  // 脱退確認中の行（テーブル外の固定位置に確認を出すため、対象行を先に取り出しておく）
+  const confirmingLeaveRow = rows.find((r) => r.teamId === confirmingLeaveTeamId) ?? null;
+
   return (
     <div className="container">
       <div className="card">
@@ -385,6 +416,19 @@ export default function AccountPage() {
         )}
         {rows.length > 0 && (
           <p className="empty-note">「移動」を押すと、チームのホームに行きます</p>
+        )}
+        {confirmingLeaveRow && (
+          <div className="card-section">
+            <ConfirmBox
+              message={`${teamDisplayName(confirmingLeaveRow.teamCallName)}から脱退しますか？`}
+              confirmLabel="脱退する"
+              busyLabel="脱退中..."
+              busy={leavingTeamId === confirmingLeaveRow.teamId}
+              confirmClass="btn-danger"
+              onConfirm={() => leaveTeam(confirmingLeaveRow.teamId)}
+              onCancel={() => setConfirmingLeaveTeamId(null)}
+            />
+          </div>
         )}
         {(rows.length > 0 || creating) && (
           <div className="team-table-wrap">
@@ -419,6 +463,14 @@ export default function AccountPage() {
                           disabled={deletingTeamId === row.teamId}
                         >
                           {deletingTeamId === row.teamId ? '削除中...' : '削除'}
+                        </button>
+                      )}
+                      {row.role === 'collaborator' && (
+                        <button
+                          className="btn-danger btn-danger-sm"
+                          onClick={() => setConfirmingLeaveTeamId(row.teamId)}
+                        >
+                          脱退
                         </button>
                       )}
                     </td>
@@ -486,7 +538,13 @@ export default function AccountPage() {
 
         {!creating && (
           <div className="action-row">
-            <button className="btn-main" onClick={() => setCreating(true)}>
+            <button
+              className="btn-main"
+              onClick={() => {
+                setConfirmingLeaveTeamId(null); // 別の操作に移るため、脱退確認中の行があれば取消と同じ扱いにする
+                setCreating(true);
+              }}
+            >
               チームを作成する
             </button>
           </div>

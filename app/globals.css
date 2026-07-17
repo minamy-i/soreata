@@ -312,6 +312,8 @@ button:active {
   font-size: 0.78rem;
   padding: 4px 14px;
   border: 1px solid var(--border-strong);
+  /* line-heightをpx固定にし、隣に並ぶ.team-cell-input（フォントサイズが異なる）と実高さを一致させる */
+  line-height: 20px;
 }
 
 .btn-save:disabled {
@@ -769,9 +771,11 @@ a.record-item:hover {
 .team-cell-input {
   width: 100%;
   min-width: 90px;
-  border: 1.5px solid var(--border-strong);
-  padding: 6px 8px;
+  /* 同じ行に並ぶ.btn-save系ボタンとpadding・borderを揃え、line-heightもpx固定で一致させる（フォントサイズが違うため） */
+  border: 1px solid var(--border-strong);
+  padding: 4px 8px;
   font-size: 0.88rem;
+  line-height: 20px;
 }
 
 .team-cell-with-edit {
