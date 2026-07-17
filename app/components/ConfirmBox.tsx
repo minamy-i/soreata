@@ -1,4 +1,4 @@
-// 確認ダイアログ（メッセージ＋実行/キャンセル）の共通表示。保存・削除・再投稿の確認で使う
+// 確認ダイアログ（メッセージ＋実行/取消）の共通表示。保存・削除・再投稿の確認で使う
 export default function ConfirmBox({
   message,
   confirmLabel,
@@ -24,7 +24,7 @@ export default function ConfirmBox({
           {busy ? busyLabel : confirmLabel}
         </button>
         <button className="btn-sub" onClick={onCancel}>
-          キャンセル
+          取消
         </button>
       </div>
     </div>
