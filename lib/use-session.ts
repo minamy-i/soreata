@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import type { Session } from '@supabase/supabase-js';
 
-// ログインセッションの取得・監視。ナビ・AI分解画面など複数箇所で使う共通フック
+// ログインセッションの取得・監視。ナビ・AI提案画面など複数箇所で使う共通フック
 export function useSession(): Session | null {
   const [session, setSession] = useState<Session | null>(null);
 

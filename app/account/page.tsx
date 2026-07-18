@@ -360,6 +360,19 @@ export default function AccountPage() {
     );
   }
 
+  // チーム作成中の空行に出す入力欄（呼び名・ニックネーム・関係の3セルで共通）
+  function renderNewRowInput(field: keyof typeof newRow, placeholder: string) {
+    return (
+      <input
+        autoFocus={field === 'name'}
+        className="team-cell-input"
+        placeholder={placeholder}
+        value={newRow[field]}
+        onChange={(e) => setNewRow((n) => ({ ...n, [field]: e.target.value }))}
+      />
+    );
+  }
+
   // チーム名セル：owner編集可（編集対象は呼び名のみ）。移動は行末の「移動」リンクが担う
   function renderNameCell(row: TeamRow) {
     const isEditingThis = editing?.teamId === row.teamId && editing.field === 'name';
@@ -479,33 +492,9 @@ export default function AccountPage() {
                 {creating && (
                   <tr>
                     <td></td>
-                    <td>
-                      <input
-                        autoFocus
-                        className="team-cell-input"
-                        placeholder="呼び名（例：太郎）"
-                        value={newRow.name}
-                        onChange={(e) => setNewRow((n) => ({ ...n, name: e.target.value }))}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="team-cell-input"
-                        placeholder="ニックネーム"
-                        value={newRow.nickname}
-                        onChange={(e) => setNewRow((n) => ({ ...n, nickname: e.target.value }))}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="team-cell-input"
-                        placeholder="関係"
-                        value={newRow.relationship}
-                        onChange={(e) =>
-                          setNewRow((n) => ({ ...n, relationship: e.target.value }))
-                        }
-                      />
-                    </td>
+                    <td>{renderNewRowInput('name', '呼び名（例：太郎）')}</td>
+                    <td>{renderNewRowInput('nickname', 'ニックネーム')}</td>
+                    <td>{renderNewRowInput('relationship', '関係')}</td>
                     <td className="team-row-actions">
                       <button
                         className="btn-sub btn-save"

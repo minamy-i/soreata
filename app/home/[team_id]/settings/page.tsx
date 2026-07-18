@@ -12,7 +12,7 @@ export default async function TeamSettingsPage({
 }) {
   const { team_id } = await params;
   const supabase = await createSupabaseServer();
-  const session = await requireSession(supabase, `/home/${team_id}/settings`);
+  const session = await requireSession(supabase);
 
   // 自分の所属確認（当人権限者、またはWebhook管理を委譲された協力者のみ入れる）
   const { data: myMembership } = await myMembershipQuery<{

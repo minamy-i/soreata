@@ -63,7 +63,7 @@ ER図：`docs/data_structure_diagram.md` 参照。テーブル構成を変更し
 | team_id | uuid FK | NOT NULL | teams.id |
 | created_by | uuid FK | NOT NULL | accounts.id。作成時に必ず入る |
 | task_text | text | NOT NULL | 記録は完成物のみ保存＝作成時に必ず入る |
-| abilities | jsonb | NOT NULL | AI分解結果。作成時に必ず入る |
+| abilities | jsonb | NOT NULL | AI提案結果。作成時に必ず入る |
 | created_at | timestamptz | NOT NULL | |
 | posted_at | timestamptz | NULL可 | 外部ツール（Slack/Discord）への最終投稿日時（NULL = 未投稿）。再投稿はブロックしない。単なる表示用 |
 

@@ -8,7 +8,6 @@ import { useActiveTeam } from '@/lib/use-active-team';
 import { useAccordion } from '@/lib/use-accordion';
 import AbilityBody from '@/app/components/AbilityBody';
 import ConfirmBox from '@/app/components/ConfirmBox';
-import LocationPinIcon from '@/app/components/LocationPinIcon';
 import { teamDisplayName } from '@/lib/team-display';
 import { buildRecordText } from '@/lib/record-text';
 import type { Ability } from '@/lib/ability';
@@ -21,10 +20,10 @@ const EXAMPLE_TASKS = [
   '既に何年も勤めている会社で新しい仕事の手順を覚えるのに時間がかかる',
 ];
 
-// 保存できない状態（=teamパラメータでチームが確定していない）向けの案内文
+// 対象者未確定（=teamパラメータで保存対象のチームが確定していない）状態向けの案内文
 // 「チームホーム起点への一本化」決定（docs/NOTES.md参照）により、
 // このページ単体では保存できない。案内はチーム所属状況で出し分ける。
-const BRIDGE_TEXT_HAS_TEAM = 'このページはお試し用です。保存するには、チームホームの「AI提案へ」から開いてください。';
+const BRIDGE_TEXT_HAS_TEAM = 'この画面からの提案は保存されません。保存するには、チームホームの「AI提案へ」から開いてください。';
 const BRIDGE_TEXT_NO_TEAM = '次回以降の結果は、登録後のチーム作成・所属により保存できます。';
 
 export default function Home() {
@@ -229,7 +228,6 @@ export default function Home() {
             <span className="step-badge">1</span>困りごとを入力する
             {activeTeam && (
               <span className="team-name-tag push-right">
-                <LocationPinIcon />
                 {teamDisplayName(activeTeam.teamCallName)}
               </span>
             )}

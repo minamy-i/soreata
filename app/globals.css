@@ -14,10 +14,12 @@
   --bg-disabled: rgba(255, 255, 255, 0.35);
   --text-faint: rgba(255, 255, 255, 0.35);
   --bg-card: rgba(64, 64, 64, 0.55);
-  /* 現在地を示す文字色（グローバルナビのアクティブ状態・チーム内ページタイトル・team-name-tagで共用）。
+  /* 白に近い明るさの文字色（グローバルナビのアクティブ状態・チーム内ページタイトルの現在地表示、
+     およびteam-name-tagで共用）。ピンアイコンが付くのは現在地表示（ナビ・ページタイトル）のみ。
+     team-name-tagは対象チーム名の提示であり現在地ではないため、文字色だけを共用しアイコンは付けない。
      以前は白背景の反転表示、その後は水色文字を試したが、このアプリの配色は基本的に白の濃淡のみ
-     （色はエラー表示の赤だけ）で構成されており、水色だけ浮いて見えたため撤回。白に近い明るさ＋
-     ピンアイコンの組み合わせにした（詳しい経緯は docs/NOTES.md 参照） */
+     （色はエラー表示の赤だけ）で構成されており、水色だけ浮いて見えたため撤回した（詳しい経緯は
+     docs/NOTES.md 参照） */
   --text-location: rgba(230, 230, 255, 0.8);
   --color-error: #ff8080;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
@@ -224,7 +226,10 @@ textarea::placeholder {
   color: var(--text-placeholder);
 }
 
-textarea:focus {
+/* フォーカス時の枠色（テキストエリア・フォーム入力・確認日欄で共用） */
+textarea:focus,
+.form-input:focus,
+.date-input:focus {
   border-color: var(--border-strong);
 }
 
@@ -264,7 +269,7 @@ button:active {
 }
 
 .btn-main:hover {
-  background: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--text) 85%, transparent);
 }
 
 .btn-main:disabled {
@@ -290,14 +295,12 @@ button:active {
 }
 
 .btn-sub:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--text) 12%, transparent);
 }
 
-/* ナビの現在地表示（.page-title）と同じ見た目。「誰のチームか」を常時示す */
+/* 「誰のチームか」を常時示す。文字色は.page-title（現在地表示）と共用するが、
+   これは現在地ではなく対象チーム名の提示のため、ピンアイコンは付けない */
 .team-name-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
   color: var(--text-location);
   font-size: 0.78rem;
   font-weight: 700;
@@ -316,7 +319,8 @@ button:active {
   line-height: 20px;
 }
 
-.btn-save:disabled {
+.btn-save:disabled,
+.btn-danger:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -355,7 +359,7 @@ button:active {
 }
 
 .example-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: color-mix(in srgb, var(--text) 16%, transparent);
 }
 
 /* ---- 保存・コピー案内（未登録／チーム0件向け） ---- */
@@ -439,18 +443,18 @@ button:active {
   font-size: 0.88rem;
   line-height: 1.8;
   border-top: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--text) 4%, transparent);
   color: var(--text-dim);
 }
 
 /* ---- 当人は？ブロック ---- */
 .person-line {
   display: block;
-  background: rgba(255, 255, 255, 0.09);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
   border-radius: 6px;
   padding: 5px 10px;
   margin: 6px 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: color-mix(in srgb, var(--text) 72%, transparent);
   font-size: 0.86rem;
 }
 
@@ -486,10 +490,6 @@ button:active {
 
 .form-input::placeholder {
   color: var(--text-placeholder);
-}
-
-.form-input:focus {
-  border-color: var(--border-strong);
 }
 
 .form-value {
@@ -582,8 +582,7 @@ a.record-item:hover {
 }
 
 /* ---- ページタイトル（チームのホーム・設定・記録詳細で共通） ----
-   「今どのチーム・チーム内のどこにいるか」を示す現在地表示。水色の文字＋ピンアイコンで表す
-   （以前は白背景の反転表示だったが、白背景ボタン.btn-mainと紛らわしいとの指摘で撤回。詳しい経緯は docs/NOTES.md 参照） */
+   「今どのチーム・チーム内のどこにいるか」を示す現在地表示。文字色（--text-location）の経緯は:root参照 */
 .page-title {
   display: inline-flex;
   align-items: center;
@@ -659,10 +658,6 @@ a.record-item:hover {
   cursor: pointer;
 }
 
-.date-input:focus {
-  border-color: var(--border-strong);
-}
-
 .date-input::-webkit-calendar-picker-indicator {
   filter: invert(1);
   opacity: 0.5;
@@ -701,11 +696,6 @@ a.record-item:hover {
 
 .btn-danger:hover {
   background: color-mix(in srgb, var(--color-error) 12%, transparent);
-}
-
-.btn-danger:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* 確認ダイアログ（削除・再投稿など共通） */

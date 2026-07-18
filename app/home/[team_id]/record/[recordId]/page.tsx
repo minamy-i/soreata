@@ -13,13 +13,9 @@ export default async function RecordPage({
   const { team_id, recordId } = await params;
   const supabase = await createSupabaseServer();
 
-  const { membership: myMembership } = await requireMember(
-    supabase,
-    team_id,
-    `/home/${team_id}/record/${recordId}`
-  );
+  const { membership: myMembership } = await requireMember(supabase, team_id);
 
-  // AI分析記録の取得
+  // AI提案記録の取得
   const { data: decomp } = await supabase
     .from('decompositions')
     .select('id, task_text, abilities, created_at, posted_at')

@@ -12,7 +12,7 @@ graph LR
     ROOT((soreata))
 
     ROOT --> APP["app/\n画面とサーバ処理"]
-    APP --> APP_PAGE["page.tsx\nトップページ（困りごとのAI分解）"]
+    APP --> APP_PAGE["page.tsx\nトップページ（困りごとのAI提案）"]
     APP --> APP_LAYOUT["layout.tsx\n全ページ共通の枠"]
     APP --> APP_CSS["globals.css\n全体のスタイル"]
     APP --> APP_LOGIN["login/"]
@@ -22,15 +22,17 @@ graph LR
     APP --> APP_AUTH["auth/callback/"]
     APP_AUTH --> AUTH_ROUTE["route.ts\nGoogleログイン後の戻り先"]
     APP --> APP_API["api/"]
-    APP_API --> API_DECOMPOSE["decompose/route.ts\nAI分解API（Gemini呼び出し）"]
+    APP_API --> API_DECOMPOSE["decompose/route.ts\nAI提案API（Gemini呼び出し）"]
     APP_API --> API_INVITE["invite/route.ts\n協力者招待API"]
     APP_API --> API_WEBHOOK["post-webhook/route.ts\n外部ツール投稿API"]
+    APP_API --> API_ACCOUNTDELETE["account/delete/route.ts\n退会（アカウント削除）API"]
     APP --> APP_COMPONENTS["components/"]
     APP_COMPONENTS --> COMP_NAV["GlobalNav.tsx\n共通ナビゲーション"]
     APP_COMPONENTS --> COMP_ABILITY["AbilityBody.tsx\n能力1件の詳細表示"]
     APP_COMPONENTS --> COMP_CONFIRM["ConfirmBox.tsx\n確認ダイアログ"]
     APP_COMPONENTS --> COMP_FOOTER["Footer.tsx\n共通フッター（お問い合わせ）"]
     APP_COMPONENTS --> COMP_PENCIL["PencilIcon.tsx\n編集アイコン（SVG）"]
+    APP_COMPONENTS --> COMP_PIN["LocationPinIcon.tsx\n現在地表示アイコン（SVG）"]
     APP --> APP_HOME["home/[team_id]/"]
     APP_HOME --> TEAM_PAGE["page.tsx\nチームページ"]
     APP_HOME --> HOME_RECORD["record/[recordId]/"]
@@ -41,9 +43,9 @@ graph LR
     HOME_SETTINGS --> SETTINGS_FORM["SettingsForm.tsx\nチーム設定フォーム（クライアント側）"]
 
     ROOT --> LIB["lib/\n共通ロジック"]
-    LIB --> LIB_ABILITY["ability.ts\nAI分解結果1件の型定義"]
+    LIB --> LIB_ABILITY["ability.ts\nAI提案結果1件の型定義"]
     LIB --> LIB_APIRES["api-response.ts\nAPI共通のエラーレスポンス"]
-    LIB --> LIB_PROMPT["prompt.ts\nAI分解のプロンプト定義"]
+    LIB --> LIB_PROMPT["prompt.ts\nAI提案のプロンプト定義"]
     LIB --> LIB_RECORDTEXT["record-text.ts\n記録をテキストに整形"]
     LIB --> LIB_REQUIREMEMBER["require-member.ts\n未ログイン・非メンバーのガード"]
     LIB --> LIB_SBADMIN["supabase-admin.ts\nservice-roleクライアント（サーバー専用）"]
@@ -83,7 +85,7 @@ graph LR
     ROOT --> CLAUDEMD["CLAUDE.md\nAIとの共通ルール"]
     ROOT --> READMEMD["README.md\n概要・理念"]
 
-    class ROOT,APP,APP_PAGE,APP_LAYOUT,APP_CSS,APP_LOGIN,LOGIN_PAGE,APP_ACCOUNT,ACCOUNT_PAGE,APP_AUTH,AUTH_ROUTE,APP_API,API_DECOMPOSE,API_INVITE,API_WEBHOOK,APP_COMPONENTS,COMP_NAV,COMP_ABILITY,COMP_CONFIRM,COMP_FOOTER,COMP_PENCIL,APP_HOME,TEAM_PAGE,HOME_RECORD,RECORD_PAGE,RECORD_DETAIL,HOME_SETTINGS,SETTINGS_PAGE,SETTINGS_FORM appStyle
+    class ROOT,APP,APP_PAGE,APP_LAYOUT,APP_CSS,APP_LOGIN,LOGIN_PAGE,APP_ACCOUNT,ACCOUNT_PAGE,APP_AUTH,AUTH_ROUTE,APP_API,API_DECOMPOSE,API_INVITE,API_WEBHOOK,API_ACCOUNTDELETE,APP_COMPONENTS,COMP_NAV,COMP_ABILITY,COMP_CONFIRM,COMP_FOOTER,COMP_PENCIL,COMP_PIN,APP_HOME,TEAM_PAGE,HOME_RECORD,RECORD_PAGE,RECORD_DETAIL,HOME_SETTINGS,SETTINGS_PAGE,SETTINGS_FORM appStyle
     class LIB,LIB_ABILITY,LIB_APIRES,LIB_PROMPT,LIB_RECORDTEXT,LIB_REQUIREMEMBER,LIB_SBADMIN,LIB_SBBROWSER,LIB_SBSERVER,LIB_TEAMDELETE,LIB_TEAMDISPLAY,LIB_TEAMEMPTY,LIB_TEAMMEMBERS,LIB_USEACCORDION,LIB_USEACTIVETEAM,LIB_USESESSION libStyle
     class DOCS,DOCS_SPEC,DOCS_NEXT,DOCS_NOTES,DOCS_DATASTRUCT,DOCS_DATADIAGRAM,DOCS_SCHEMA,DOCS_SCREENTREE,DOCS_DIRSTRUCT docsStyle
     class PKGJSON,PKGLOCK,NEXTCONFIG,NEXTENVD,TSCONFIG,TSBUILDINFO,VERCELJSON,VERCELDIR,ENVFILES,CLAUDEMD,READMEMD otherStyle

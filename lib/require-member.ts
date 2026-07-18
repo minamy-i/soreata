@@ -2,10 +2,10 @@ import { redirect } from 'next/navigation';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { myMembershipQuery } from './team-members';
 
-// 未ログインなら/loginへ（元のURLをnextに載せる）。サーバーページ共通の入口ガード
-export async function requireSession(supabase: SupabaseClient, next: string) {
+// 未ログインなら/へ（AI提案画面に誘導。ログインは常設ナビから任意で行う）。サーバーページ共通の入口ガード
+export async function requireSession(supabase: SupabaseClient) {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect(`/login?next=${next}`);
+  if (!session) redirect('/');
   return session;
 }
 
@@ -18,8 +18,8 @@ type Membership = {
 
 // 認証＋所属チェック（有効なメンバーで、nickname・relationshipが入力済みか）。
 // 欠けていれば/accountへ（未入室・空セル残りはチーム内ページに入れないルール）
-export async function requireMember(supabase: SupabaseClient, teamId: string, next: string) {
-  const session = await requireSession(supabase, next);
+export async function requireMember(supabase: SupabaseClient, teamId: string) {
+  const session = await requireSession(supabase);
 
   const { data: myMembership } = await myMembershipQuery<Membership>(
     supabase,

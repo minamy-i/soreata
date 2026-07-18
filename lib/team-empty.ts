@@ -1,10 +1,10 @@
-import { createSupabaseBrowser } from "@/lib/supabase-browser";
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-// チームが「空」（協力者0・保留中の招待0・AI分解記録0）かどうかを判定する。
-// /account のチーム一覧表と /home/[team_id]/settings のチーム削除セクションで共通利用する。
+// チームが「空」（協力者0・保留中の招待0・AI提案記録0）かどうかを判定する。
+// /account のチーム一覧表（ブラウザ側）と /home/[team_id]/settings のチーム削除セクション（サーバー側）で共通利用する。
 // 空のチームは確認ダイアログなしで即削除できる（docs/SPEC.md参照）。
 export async function isTeamEmpty(
-  supabase: ReturnType<typeof createSupabaseBrowser>,
+  supabase: SupabaseClient,
   teamId: string
 ): Promise<boolean> {
   const [collaborators, invitations, records] = await Promise.all([

@@ -61,7 +61,7 @@ create unique index team_members_unique_active_membership
   on team_members (team_id, account_id)
   where revoked_at is null;
 
--- decompositions：AI分解記録。編集不可。confirmed_at（能力確認日）・posted_atのみ後から更新可
+-- decompositions：AI提案記録。編集不可。confirmed_at（能力確認日）・posted_atのみ後から更新可
 create table decompositions (
   id uuid primary key default gen_random_uuid(),
   team_id uuid not null references teams(id) on delete cascade,

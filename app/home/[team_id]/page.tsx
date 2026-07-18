@@ -13,7 +13,7 @@ export default async function TeamPage({
   const { team_id } = await params;
   const supabase = await createSupabaseServer();
 
-  const { membership: myMembership } = await requireMember(supabase, team_id, `/home/${team_id}`);
+  const { membership: myMembership } = await requireMember(supabase, team_id);
 
   const { data: team } = await supabase
     .from('teams')
@@ -30,7 +30,7 @@ export default async function TeamPage({
     .eq('team_id', team_id)
     .is('revoked_at', null);
 
-  // AI分解記録を新しい順に取得
+  // AI提案記録を新しい順に取得
   const { data: decompositions } = await supabase
     .from('decompositions')
     .select('id, task_text, created_at')

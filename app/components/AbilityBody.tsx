@@ -1,6 +1,6 @@
 import type { Ability } from '@/lib/ability';
 
-// アコーディオンの展開部（説明・当人は？・対応）の表示。AI分解画面・記録詳細ページで共有する
+// アコーディオンの展開部（説明・当人は？・対応）の表示。AI提案画面・記録詳細ページで共有する
 export default function AbilityBody({ ability }: { ability: Ability }) {
   return (
     <div className="accordion-body">

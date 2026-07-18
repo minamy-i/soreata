@@ -1,6 +1,6 @@
 import type { Ability } from './ability';
 
-// AI分解記録を1本のテキストに整形する。コピー機能・外部ツール投稿の両方で共有する
+// AI提案記録を1本のテキストに整形する。コピー機能・外部ツール投稿の両方で共有する
 export function buildRecordText(taskText: string, abilities: Ability[]): string {
   const abilitiesText = abilities
     .map(({ title, description, person, solution }) =>
