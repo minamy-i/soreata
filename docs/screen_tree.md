@@ -16,7 +16,7 @@ graph TD
     A_DASH["マイページ  /account\nメアド・チーム一覧の表\n（チーム名・自分のニックネーム・relationship）\nチームを作成する（その場で新規行）\n来ている招待＋参加ボタン\n協力者は「脱退」ボタン（即時・確認あり）\n退会ボタン（所属チーム0件のみ）"]
     A_DASH -->|"「移動」リンク（自分のnickname・relationship両方埋まっている行のみ）"| TEAM
 
-    TEAM["チームページ  /home/[team_id]\nチーム名・自分のニックネーム表示（読み取りのみ）\nメンバー一覧・AI提案記録一覧"]
+    TEAM["チームページ  /home/[team_id]\nチーム名・自分のニックネーム表示（読み取りのみ）\nメンバー・AI提案記録一覧"]
     TEAM -->|"「AI提案へ」  /?team=[team_id]"| AI
     TEAM -->|"記録をクリック"| RECORD["記録詳細  /home/[team_id]/record/[id]\n外部ツールへの投稿ボタン（Webhook設定済みの場合）\n削除ボタン（当人権限者のみ）"]
     RECORD --> CONF["能力確認日\n入力：全員可・変更：当人権限者のみ"]

@@ -8,6 +8,20 @@ UI文言・配色・CSS微調整・作業ログは書かない。git・SPEC.md�
 
 ---
 
+## Next.js 16で`next lint`コマンドが廃止・eslint-config-nextがflat config非対応
+
+日時：2026-07-19
+
+結論：
+Next.js 16で`next lint`サブコマンドが削除された。`package.json`の`lint`スクリプトは`eslint .`に変更する。
+`eslint-config-next`（当時15.3.4のまま据え置き）はESLint v9のflat config形式に未対応のため、`@eslint/eslintrc`のFlatCompatで`next/core-web-vitals`・`next/typescript`を読み込む`eslint.config.mjs`を新規作成した（既存の依存関係だけで対応でき、新規installは不要）。
+`eslint .`はデフォルトで`.next/`等を除外しないため、`ignores`に`.next/**`等を明記しないとビルド生成物まで対象になり1万件超のノイズが出る。
+
+不採用案：
+- `eslint-config-next`をNext 16系に上げる：新規install・依存関係の変化を伴うため見送り、今回は「動くようにするだけ」に留めた。
+
+---
+
 ## アカウント削除：hard delete／soft deleteでAuthユーザー削除を分岐
 
 日時：2026-07-14

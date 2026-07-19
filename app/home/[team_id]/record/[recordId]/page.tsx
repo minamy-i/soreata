@@ -1,7 +1,6 @@
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import RecordDetail from "./RecordDetail";
-import { teamDisplayName } from "@/lib/team-display";
 import { requireMember } from "@/lib/require-member";
 import type { Ability } from "@/lib/ability";
 
