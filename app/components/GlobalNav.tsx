@@ -7,7 +7,7 @@ import LocationPinIcon from '@/app/components/LocationPinIcon';
 
 export default function GlobalNav() {
   const pathname = usePathname();
-  const session = useSession();
+  const { session } = useSession();
   const onAccount = pathname.startsWith('/account');
 
   return (

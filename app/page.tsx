@@ -32,7 +32,7 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [abilities, setAbilities] = useState<Ability[]>([]);
-  const session = useSession();
+  const { session } = useSession();
   const [copyDone, setCopyDone] = useState(false);
   const { saveCandidates, activeTeam } = useActiveTeam();
   const [confirmSave, setConfirmSave] = useState(false);

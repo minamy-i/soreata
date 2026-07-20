@@ -342,9 +342,20 @@ button:active {
   gap: 8px;
 }
 
-.example-label {
-  font-size: 0.8rem;
+/* ---- 薄字ラベル（本体より一段薄い補足テキスト共通） ---- */
+.example-label,
+.guest-note,
+.loading,
+.record-date,
+.empty-note,
+.record-meta-date,
+.webhook-posted-note,
+.confirmed-label {
+  font-size: 0.82rem;
   color: var(--text-muted);
+}
+
+.example-label {
   flex-shrink: 0;
 }
 
@@ -364,19 +375,11 @@ button:active {
 
 /* ---- 保存・コピー案内（未登録／チーム0件向け） ---- */
 .guest-note {
-  font-size: 0.82rem;
-  color: var(--text-muted);
   margin-top: 12px;
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-}
-
-/* ---- ローディング ---- */
-.loading {
-  font-size: 0.88rem;
-  color: var(--text-muted);
 }
 
 /* ---- エラー ---- */
@@ -560,8 +563,6 @@ a.record-item:hover {
 }
 
 .record-date {
-  font-size: 0.80rem;
-  color: var(--text-muted);
   flex-shrink: 0;
 }
 
@@ -576,8 +577,6 @@ a.record-item:hover {
 /* paddingではなくmarginにする：直前の要素（card-titleなど）のmargin-bottomと重なって
    縮まる（マージン相殺）ため、paddingで足し算になり余白が想定より広がるのを防ぐ */
 .empty-note {
-  font-size: 0.88rem;
-  color: var(--text-muted);
   margin: var(--gap-tight) 0;
 }
 
@@ -610,8 +609,6 @@ a.record-item:hover {
 
 /* ---- 記録詳細 ---- */
 .record-meta-date {
-  font-size: 0.82rem;
-  color: var(--text-muted);
   margin-bottom: var(--gap-title);
 }
 
@@ -628,11 +625,6 @@ a.record-item:hover {
   gap: var(--gap-tight);
 }
 
-.webhook-posted-note {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
 .confirmed-field {
   display: flex;
   align-items: center;
@@ -641,8 +633,6 @@ a.record-item:hover {
 }
 
 .confirmed-label {
-  font-size: 0.78rem;
-  color: var(--text-muted);
   flex-shrink: 0;
 }
 

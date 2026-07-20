@@ -3,18 +3,16 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
+import { useSession } from '@/lib/use-session';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { session, loading } = useSession();
 
-  // ログイン済みなら/accountへ
+  // ログイン済みなら/accountへ（確認中はまだ判定しない）
   useEffect(() => {
-    const supabase = createSupabaseBrowser();
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) return;
-      router.push('/account');
-    });
-  }, [router]);
+    if (!loading && session) router.push('/account');
+  }, [loading, session, router]);
 
   async function signIn() {
     const supabase = createSupabaseBrowser();

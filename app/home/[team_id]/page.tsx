@@ -15,7 +15,7 @@ export default async function TeamPage({
   const { membership: myMembership } = await requireMember(supabase, team_id);
   const team = await requireTeam<{ name: string }>(supabase, team_id, 'name');
 
-  // メンバー一覧（閲覧専用）
+  // メンバー（閲覧専用）
   const { data: members } = await supabase
     .from('team_members')
     .select('nickname, relationship, role')

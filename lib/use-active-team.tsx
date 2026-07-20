@@ -24,7 +24,7 @@ const ActiveTeamContext = createContext<ActiveTeamState>({ saveCandidates: [], a
 export function ActiveTeamProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const session = useSession();
+  const { session } = useSession();
   const [saveCandidates, setSaveCandidates] = useState<SaveCandidate[]>([]);
   const teamId = pathname === '/' ? searchParams.get('team') : null;
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
+import { useSession } from '@/lib/use-session';
 import { teamDisplayName, teamNameOf } from '@/lib/team-display';
 import { isTeamEmpty } from '@/lib/team-empty';
 import { deleteTeamById } from '@/lib/team-delete';
@@ -71,18 +72,21 @@ export default function AccountPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteAccountError, setDeleteAccountError] = useState('');
 
-  useEffect(() => {
-    const supabase = createSupabaseBrowser();
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) {
-        router.push('/');
-        return;
-      }
-      const userId = data.session.user.id;
-      const userEmail = data.session.user.email ?? '';
-      setEmail(userEmail);
-      setUserId(userId);
+  const { session, loading: sessionLoading } = useSession();
 
+  useEffect(() => {
+    if (sessionLoading) return;
+    if (!session) {
+      router.push('/');
+      return;
+    }
+    const userId = session.user.id;
+    const userEmail = session.user.email ?? '';
+    setEmail(userEmail);
+    setUserId(userId);
+
+    const supabase = createSupabaseBrowser();
+    (async () => {
       // 所属チーム一覧（マイチーム・協力チームを統合）
       const { data: members } = await supabase
         .from('team_members')
@@ -131,8 +135,8 @@ export default function AccountPage() {
       }
 
       setLoading(false);
-    });
-  }, [router]);
+    })();
+  }, [session, sessionLoading, router]);
 
   // ニックネーム・relationshipセルの保存（team_members.自分の行を更新）
   async function saveMemberField(row: TeamRow, field: 'nickname' | 'relationship') {
