@@ -278,19 +278,24 @@ button:active {
   transform: none;
 }
 
-/* サブボタン：白枠。<Link>（aタグ）に付ける場合もあるため、button要素セレクタに頼らず自前で持つ */
-.btn-sub {
-  display: inline-block;
+/* ---- サブ・削除ボタン共通の形（色は個別に指定） ---- */
+.btn-sub,
+.btn-danger {
   background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border-strong);
   border-radius: var(--radius-btn);
   padding: 4px 20px;
   font-size: 0.85rem;
   font-weight: 700;
   font-family: inherit;
-  text-decoration: none;
   cursor: pointer;
+}
+
+/* サブボタン：白枠。<Link>（aタグ）に付ける場合もあるため、button要素セレクタに頼らず自前で持つ */
+.btn-sub {
+  display: inline-block;
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  text-decoration: none;
   transition: background 0.15s, transform 0.1s;
 }
 
@@ -672,15 +677,8 @@ a.record-item:hover {
 
 /* 削除ボタン */
 .btn-danger {
-  background: transparent;
   color: var(--color-error);
   border: 1px solid var(--color-error);
-  padding: 4px 20px;
-  font-size: 0.85rem;
-  border-radius: var(--radius-btn);
-  font-family: inherit;
-  font-weight: 700;
-  cursor: pointer;
   transition: background 0.15s;
 }
 

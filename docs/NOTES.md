@@ -8,6 +8,19 @@ UI文言・配色・CSS微調整・作業ログは書かない。git・SPEC.md�
 
 ---
 
+## `confirmXxx`系のconfirm状態は共通フック化しない
+
+日時：2026-07-20
+
+結論：
+`confirmSave`(`app/page.tsx`)・`confirmDelete`/`confirmPost`(`RecordDetail.tsx`)・`confirmDeleteAccount`(`account/page.tsx`)というboolean状態と、`confirmingLeaveTeamId`(`account/page.tsx`。`string | null`で対象行のIDを持つ)は、共通フックに統一しない。
+確認ダイアログの表示自体（メッセージ・ボタン配置）は`ConfirmBox`コンポーネントに既に共通化済み。残っている各`useState`は「開いているか」を覚えるだけの1行で、開くタイミングも箇所ごとに違う（`confirmPost`は前回投稿済みの時だけ確認を挟む条件付き、他は単純クリックで開く、`confirmingLeaveTeamId`はそもそもboolean型ではなく対象行のIDを持つ形）。共通化しても行数はほぼ減らず、間接層が増えるだけと判断した。
+
+不採用案：
+- `useConfirm()`のようなフックで5箇所を統一する：表示側の重複は`ConfirmBox`で既に解消済みで、残るのは1行の`useState`のみ。無理に共通化すると、各箇所で異なる「開くタイミングの条件」を吸収する分岐がフック側に増え、かえって見通しが悪くなる。
+
+---
+
 ## Next.js 16で`next lint`コマンドが廃止・eslint-config-nextがflat config非対応
 
 日時：2026-07-19

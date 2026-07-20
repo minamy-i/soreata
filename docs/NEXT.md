@@ -5,13 +5,6 @@ push：NEXT更新直後
 
 ## 次にやること
 
-agent-labの調査メモ（gitignores/agent-lab-調査メモ.md）をこちら側で再検証した結果、一つずつ着手する。
-（メモ自体に誤りが2件あった：`prompt.js`未使用、`.record-item`/`.member-row`重複。いずれも実際は誤り。詳細は再検証時の会話ログ参照）
-
-- [ ] 要相談・着手前に確認：`.btn-sub`と`.btn-danger`の構造類似（padding/font-size/radius/font-weightが同一、色のみ違う）を共通化するか。record-itemの前例があるため意図的分離の可能性も検討
-- [ ] 要相談・着手前に確認：`confirmXxx`/`setConfirmXxx`の散在（3ファイルで確認）、`useConfirm`フック化するか
-- [ ] docs：SPEC.mdにEXAMPLE_TASKS（app/page.tsxの例文クリック補完）の記載を追加するか検討
-
 任意（今回は対応せず）：`app/layout.tsx`のカスタムフォント（Hachi Maru Pop）警告。
 `next/font/google`はこのフォントの日本語サブセットを提供していないため単純差し替え不可。
 `next/font/local`でフォントファイル（OFLライセンスにつき同梱可・確認済み）を自前ホスティングすれば日本語表示を保ったまま警告解消可能だが、今回はその手間をかけるほどではないと判断し見送り。フォント自体（`.global-nav-brand`・`h1`）は変更しない。
