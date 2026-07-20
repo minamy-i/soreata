@@ -1,9 +1,20 @@
 # NEXT
 
-更新：2026-07-19
+更新：2026-07-20
 push：NEXT更新直後
 
 ## 次にやること
+
+agent-labの調査メモ（gitignores/agent-lab-調査メモ.md）をこちら側で再検証した結果、一つずつ着手する。
+（メモ自体に誤りが2件あった：`prompt.js`未使用、`.record-item`/`.member-row`重複。いずれも実際は誤り。詳細は再検証時の会話ログ参照）
+
+- [ ] 薄字ラベルのfont-sizeバラつきを整理
+  - `.example-label`(0.80)・`.loading`(0.88)・`.record-date`(0.80)・`.webhook-posted-note`(0.82)・`.confirmed-label`(0.78)
+  - 全て`--text-muted`で役割は同じだが、サイズが理由なく5パターン。揃えると見た目が変わる箇所が出るため目視確認必須
+- [ ] 要相談・着手前に確認：login/accountが`lib/use-session.ts`を使わず`getSession()`直書き（意図的か書き忘れか、実装意図を先に確認）
+- [ ] 要相談・着手前に確認：`.btn-sub`と`.btn-danger`の構造類似（padding/font-size/radius/font-weightが同一、色のみ違う）を共通化するか。record-itemの前例があるため意図的分離の可能性も検討
+- [ ] 要相談・着手前に確認：`confirmXxx`/`setConfirmXxx`の散在（3ファイルで確認）、`useConfirm`フック化するか
+- [ ] docs：SPEC.mdにEXAMPLE_TASKS（app/page.tsxの例文クリック補完）の記載を追加するか検討
 
 任意（今回は対応せず）：`app/layout.tsx`のカスタムフォント（Hachi Maru Pop）警告。
 `next/font/google`はこのフォントの日本語サブセットを提供していないため単純差し替え不可。

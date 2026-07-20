@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
 import { useSession } from '@/lib/use-session';
 import { useActiveTeam } from '@/lib/use-active-team';
-import { useAccordion } from '@/lib/use-accordion';
-import AbilityBody from '@/app/components/AbilityBody';
+import AccordionList from '@/app/components/AccordionList';
 import ConfirmBox from '@/app/components/ConfirmBox';
 import { teamDisplayName } from '@/lib/team-display';
 import { buildRecordText } from '@/lib/record-text';
@@ -33,7 +32,6 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [abilities, setAbilities] = useState<Ability[]>([]);
-  const { openItems, toggle: toggleAccordion, reset: resetAccordion } = useAccordion();
   const session = useSession();
   const [copyDone, setCopyDone] = useState(false);
   const { saveCandidates, activeTeam } = useActiveTeam();
@@ -140,7 +138,6 @@ export default function Home() {
     setLoading(true);
     setError('');
     setAbilities([]);
-    resetAccordion();
     setConfirmSave(false);
     try {
       const res = await fetch('/api/decompose', {
@@ -162,7 +159,6 @@ export default function Home() {
     setTask('');
     setAbilities([]);
     setError('');
-    resetAccordion();
     setConfirmSave(false);
   }
 
@@ -273,16 +269,7 @@ export default function Home() {
               </p>
             )}
 
-            {abilities.map((ability, i) => (
-              <div key={i} className="accordion-item">
-                <button className="accordion-header" onClick={() => toggleAccordion(i)}>
-                  <span className="accordion-square">◻︎</span>
-                  <span className="accordion-title">{ability.title}</span>
-                  <span className={`accordion-icon${openItems.has(i) ? ' open' : ''}`}>▼</span>
-                </button>
-                {openItems.has(i) && <AbilityBody ability={ability} />}
-              </div>
-            ))}
+            <AccordionList abilities={abilities} />
 
             {confirmSave && activeTeam ? (
               <div className="card-section confirm-panel">

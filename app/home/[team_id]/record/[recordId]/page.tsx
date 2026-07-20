@@ -1,7 +1,7 @@
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import RecordDetail from "./RecordDetail";
-import { requireMember } from "@/lib/require-member";
+import { requireMember, requireTeam } from "@/lib/require-member";
 import type { Ability } from "@/lib/ability";
 
 export default async function RecordPage({
@@ -25,13 +25,11 @@ export default async function RecordPage({
   if (!decomp) redirect(`/home/${team_id}`);
 
   // Webhook設定の有無のみ判定。URL自体はクライアントへ渡さない
-  const { data: team } = await supabase
-    .from('teams')
-    .select('name, webhook_url')
-    .eq('id', team_id)
-    .single();
-
-  if (!team) redirect('/account');
+  const team = await requireTeam<{ name: string; webhook_url: string | null }>(
+    supabase,
+    team_id,
+    'name, webhook_url'
+  );
 
   return (
     <RecordDetail

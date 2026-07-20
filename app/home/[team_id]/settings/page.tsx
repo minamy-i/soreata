@@ -1,9 +1,9 @@
 import { createSupabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { isTeamEmpty } from "@/lib/team-empty";
-import { requireSession } from "@/lib/require-member";
+import { requireSession, requireTeam } from "@/lib/require-member";
 import { myMembershipQuery } from "@/lib/team-members";
-import SettingsForm from "./SettingsForm";
+import SettingsForm, { type WebhookPlatform } from "./SettingsForm";
 
 export default async function TeamSettingsPage({
   params,
@@ -27,13 +27,11 @@ export default async function TeamSettingsPage({
     redirect(`/home/${team_id}`);
   }
 
-  const { data: team } = await supabase
-    .from('teams')
-    .select('name, webhook_url, webhook_platform')
-    .eq('id', team_id)
-    .single();
-
-  if (!team) redirect('/account');
+  const team = await requireTeam<{
+    name: string;
+    webhook_url: string | null;
+    webhook_platform: WebhookPlatform | null;
+  }>(supabase, team_id, 'name, webhook_url, webhook_platform');
 
   // チーム削除セクションの表示切り替え（owner限定機能。空チームのみ即削除できる）
   const isEmpty = isOwner ? await isTeamEmpty(supabase, team_id) : false;

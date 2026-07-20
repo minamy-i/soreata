@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createSupabaseBrowser } from '@/lib/supabase-browser';
-import { useAccordion } from '@/lib/use-accordion';
-import AbilityBody from '@/app/components/AbilityBody';
+import AccordionList from '@/app/components/AccordionList';
 import ConfirmBox from '@/app/components/ConfirmBox';
 import LocationPinIcon from '@/app/components/LocationPinIcon';
 import { teamDisplayName } from '@/lib/team-display';
@@ -35,7 +34,6 @@ export default function RecordDetail({
 }) {
   const router = useRouter();
   const [abilities, setAbilities] = useState<Ability[]>(decomp.abilities);
-  const { openItems, toggle: toggleAccordion } = useAccordion();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
@@ -118,39 +116,29 @@ export default function RecordDetail({
 
         <div className="card-section">
           <div className="card-title">能力一覧</div>
-          <ul className="ability-list">
-            {abilities.map((ability, i) => (
-              <li key={i} className="accordion-item">
-                <button
-                  className="accordion-header"
-                  onClick={() => toggleAccordion(i)}
-                >
-                  <span className="accordion-square">◻︎</span>
-                  <span className="accordion-title">{ability.title}</span>
-                  <div className="confirmed-field" onClick={e => e.stopPropagation()}>
-                    <span className="confirmed-label">確認日</span>
-                    <input
-                      type="date"
-                      className="date-input"
-                      value={ability.confirmed_at ?? ''}
-                      onChange={e => updateConfirmedAt(i, e.target.value || null)}
-                    />
-                    {ability.confirmed_at && (
-                      <button
-                        className="btn-clear"
-                        onClick={() => updateConfirmedAt(i, null)}
-                        title="未確認に戻す"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                  <span className={`accordion-icon${openItems.has(i) ? ' open' : ''}`}>▼</span>
-                </button>
-                {openItems.has(i) && <AbilityBody ability={ability} />}
-              </li>
-            ))}
-          </ul>
+          <AccordionList
+            abilities={abilities}
+            renderExtra={(ability, i) => (
+              <div className="confirmed-field" onClick={e => e.stopPropagation()}>
+                <span className="confirmed-label">確認日</span>
+                <input
+                  type="date"
+                  className="date-input"
+                  value={ability.confirmed_at ?? ''}
+                  onChange={e => updateConfirmedAt(i, e.target.value || null)}
+                />
+                {ability.confirmed_at && (
+                  <button
+                    className="btn-clear"
+                    onClick={() => updateConfirmedAt(i, null)}
+                    title="未確認に戻す"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            )}
+          />
           {error && <div className="error-msg">{error}</div>}
         </div>
 

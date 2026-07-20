@@ -34,3 +34,25 @@ export async function requireMember(supabase: SupabaseClient, teamId: string) {
 
   return { session, membership: myMembership };
 }
+
+// select句は呼び出し側で指定する（myMembershipQueryと同じ理由：文字列selectだと型推論が効かないため）
+type TeamQuery<T> = {
+  single: () => Promise<{ data: T | null; error: unknown }>;
+};
+
+// チーム取得＋存在チェック。チームが無ければ/accountへ（チーム自体が削除された場合の入口ガード）
+export async function requireTeam<T>(
+  supabase: SupabaseClient,
+  teamId: string,
+  select: string
+): Promise<T> {
+  const query = supabase
+    .from('teams')
+    .select(select)
+    .eq('id', teamId) as unknown as TeamQuery<T>;
+
+  const { data: team } = await query.single();
+  if (!team) redirect('/account');
+
+  return team;
+}

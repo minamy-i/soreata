@@ -1,8 +1,7 @@
 import { createSupabaseServer } from "@/lib/supabase-server";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { teamDisplayName } from "@/lib/team-display";
-import { requireMember } from "@/lib/require-member";
+import { requireMember, requireTeam } from "@/lib/require-member";
 import LocationPinIcon from "@/app/components/LocationPinIcon";
 
 export default async function TeamPage({
@@ -14,14 +13,7 @@ export default async function TeamPage({
   const supabase = await createSupabaseServer();
 
   const { membership: myMembership } = await requireMember(supabase, team_id);
-
-  const { data: team } = await supabase
-    .from('teams')
-    .select('name')
-    .eq('id', team_id)
-    .single();
-
-  if (!team) redirect('/account');
+  const team = await requireTeam<{ name: string }>(supabase, team_id, 'name');
 
   // メンバー一覧（閲覧専用）
   const { data: members } = await supabase

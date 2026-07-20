@@ -8,7 +8,7 @@ import { teamDisplayName } from '@/lib/team-display';
 import { deleteTeamById } from '@/lib/team-delete';
 import LocationPinIcon from '@/app/components/LocationPinIcon';
 
-type WebhookPlatform = 'slack' | 'discord';
+export type WebhookPlatform = 'slack' | 'discord';
 type Invitation = { id: string; invited_email: string };
 
 export default function SettingsForm({
