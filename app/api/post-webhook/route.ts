@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { buildRecordText } from '@/lib/record-text';
-import { unauthorized, forbidden } from '@/lib/api-response';
+import { forbidden } from '@/lib/api-response';
 import { myMembershipQuery } from '@/lib/team-members';
+import { requireApiUser } from '@/lib/require-member';
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) {
-    return unauthorized();
-  }
+  const result = await requireApiUser(supabase);
+  if (!result.ok) return result.response;
+  const { user } = result;
 
   const { teamId, recordId } = await req.json();
 
@@ -22,7 +21,7 @@ export async function POST(req: NextRequest) {
   const { data: myMembership } = await myMembershipQuery<{ id: string }>(
     supabase,
     teamId,
-    session.user.id,
+    user.id,
     'id'
   ).maybeSingle();
 

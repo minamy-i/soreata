@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { createSupabaseAdmin } from '@/lib/supabase-admin';
-import { unauthorized, forbidden } from '@/lib/api-response';
+import { forbidden } from '@/lib/api-response';
 import { myMembershipQuery } from '@/lib/team-members';
+import { requireApiUser } from '@/lib/require-member';
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) {
-    return unauthorized();
-  }
+  const result = await requireApiUser(supabase);
+  if (!result.ok) return result.response;
+  const { user } = result;
 
   const { teamId, email } = await req.json();
   const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
@@ -23,7 +22,7 @@ export async function POST(req: NextRequest) {
   const { data: myMembership } = await myMembershipQuery<{ role: 'owner' | 'collaborator' }>(
     supabase,
     teamId,
-    session.user.id,
+    user.id,
     'role'
   ).single();
 
@@ -34,7 +33,7 @@ export async function POST(req: NextRequest) {
   const { data: myAccount } = await supabase
     .from('accounts')
     .select('email')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (myAccount?.email?.toLowerCase() === normalizedEmail) {

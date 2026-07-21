@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { createSupabaseAdmin } from '@/lib/supabase-admin';
-import { unauthorized } from '@/lib/api-response';
+import { requireApiUser } from '@/lib/require-member';
 
 export async function POST() {
   const supabase = await createSupabaseServer();
-  const { data: { session } } = await supabase.auth.getSession();
+  const result = await requireApiUser(supabase);
+  if (!result.ok) return result.response;
+  const { user } = result;
 
-  if (!session) {
-    return unauthorized();
-  }
-
-  const userId = session.user.id;
+  const userId = user.id;
   const admin = createSupabaseAdmin();
 
   // team_membersの全履歴行（revoked_at問わず）を数える。RLS越しには除名済みの行が見えないため管理クライアントで判定する

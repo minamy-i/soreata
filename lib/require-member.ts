@@ -1,12 +1,28 @@
 import { redirect } from 'next/navigation';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
+import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { myMembershipQuery } from './team-members';
+import { unauthorized } from './api-response';
 
 // 未ログインなら/へ（AI提案画面に誘導。ログインは常設ナビから任意で行う）。サーバーページ共通の入口ガード
 export async function requireSession(supabase: SupabaseClient) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect('/');
   return session;
+}
+
+// APIルート用の認証チェック。okがfalseの場合はresponseをそのまま返せばよい
+// （okをtrueに絞り込めばuserがnon-nullとして扱える判別可能ユニオン）
+// getUser()はSupabaseの認証サーバーに問い合わせて署名まで検証する
+// （getSession()は形式と有効期限だけで署名を検証しないため使わない。docs/NOTES.md参照）
+export async function requireApiUser(
+  supabase: SupabaseClient
+): Promise<{ ok: true; user: User } | { ok: false; response: NextResponse }> {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
+    return { ok: false, response: unauthorized() };
+  }
+  return { ok: true, user };
 }
 
 type Membership = {

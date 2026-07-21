@@ -8,6 +8,43 @@ UI文言・配色・CSS微調整・作業ログは書かない。git・SPEC.md�
 
 ---
 
+## Next.js 16で`middleware.ts`が`proxy.ts`に名称変更（罠）
+
+日時：2026-07-21 21:10
+
+結論：
+2枚目の壁として`middleware.ts`をプロジェクトルートに作成した際、Next.js 16.2.9で以下の罠に遭遇した。
+1. `middleware.ts`という慣習はNext16で非推奨。正しくは`proxy.ts`というファイル名で、エクスポートする関数名も`middleware`ではなく`proxy`にする必要がある（`export async function proxy(request: NextRequest)`）。
+2. さらに厄介なことに、`next dev`（Turbopack）はファイル監視中に`middleware.ts`を検知すると**ファイル名を`proxy.ts`へ自動で書き換える**。ただし中身の関数名までは変えてくれないため、放置すると「エクスポートが見つからない」エラーになる。
+3. その後、関数名を`proxy`に直しても、Turbopackの`.next`キャッシュが古いパス（`[project]/middleware.ts`）を参照し続け、全APIルートが500になる状態が続いた。`.next`を削除して`next dev`を再起動して解消した。
+
+連動：
+- `proxy.ts`（プロジェクトルート）
+- `lib/supabase-middleware.ts`
+
+不採用案：なし（Next.jsのバージョン固有の仕様変更に対応しただけ）
+
+---
+
+## APIルート認証チェックを`getSession()`から`getUser()`に統一
+
+日時：2026-07-21 20:41
+
+結論：
+`invite`・`account/delete`・`post-webhook`の3ルートの認証チェック（`requireApiSession()`、`lib/require-member.ts`）を、`getSession()`から`getUser()`に統一する。
+
+背景（技術的な罠）：
+`getSession()`はJWTの形式と有効期限だけを見ており、署名の検証はしない（Supabase公式が「serverでの認可判断に使うのは安全でない」と明言）。`getUser()`はSupabaseの認証サーバーに問い合わせて署名まで検証する。
+
+不採用案：
+`account/delete`だけ`getUser()`化し、`invite`・`post-webhook`は`getSession()`のまま残す：
+3ルートのうち`account/delete`だけ、認証チェック後に`session.user.id`を`admin`（service-roleキー、RLSを無視する）クライアントにそのまま渡して`deleteUser`等を実行している。ここでもし偽装JWTが`getSession()`をすり抜けると、他人のアカウントを削除できてしまう。
+一方`invite`・`post-webhook`は後続処理でRLS付き`supabase`クライアントを使うため、偽装JWTがあってもSupabase側の署名検証で弾かれ実害は出にくい。
+この非対称性から「危険な箇所だけ」直す案も検討したが、認証チェックの基準が箇所によって違う状態は、後で見た時に「なぜここだけ確認方法が違うのか」を都度確認する負担になるため、3箇所とも`getUser()`に統一する方を採った。
+`requireApiSession()`という共通関数1つのままで済み、呼び出し側（3ルート）の変更は無い。
+
+---
+
 ## `confirmXxx`系のconfirm状態は共通フック化しない
 
 日時：2026-07-20
