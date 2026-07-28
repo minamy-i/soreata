@@ -31,7 +31,7 @@ UI文言・配色・CSS微調整・作業ログは書かない。git・SPEC.md�
 日時：2026-07-21 20:41
 
 結論：
-`invite`・`account/delete`・`post-webhook`の3ルートの認証チェック（`requireApiSession()`、`lib/require-member.ts`）を、`getSession()`から`getUser()`に統一する。
+`invite`・`account/delete`・`post-webhook`の3ルートの認証チェック（`requireApiUser()`、`lib/require-member.ts`）を、`getSession()`から`getUser()`に統一する。
 
 背景（技術的な罠）：
 `getSession()`はJWTの形式と有効期限だけを見ており、署名の検証はしない（Supabase公式が「serverでの認可判断に使うのは安全でない」と明言）。`getUser()`はSupabaseの認証サーバーに問い合わせて署名まで検証する。
@@ -41,7 +41,7 @@ UI文言・配色・CSS微調整・作業ログは書かない。git・SPEC.md�
 3ルートのうち`account/delete`だけ、認証チェック後に`session.user.id`を`admin`（service-roleキー、RLSを無視する）クライアントにそのまま渡して`deleteUser`等を実行している。ここでもし偽装JWTが`getSession()`をすり抜けると、他人のアカウントを削除できてしまう。
 一方`invite`・`post-webhook`は後続処理でRLS付き`supabase`クライアントを使うため、偽装JWTがあってもSupabase側の署名検証で弾かれ実害は出にくい。
 この非対称性から「危険な箇所だけ」直す案も検討したが、認証チェックの基準が箇所によって違う状態は、後で見た時に「なぜここだけ確認方法が違うのか」を都度確認する負担になるため、3箇所とも`getUser()`に統一する方を採った。
-`requireApiSession()`という共通関数1つのままで済み、呼び出し側（3ルート）の変更は無い。
+`requireApiUser()`という共通関数1つのままで済み、呼び出し側（3ルート）の変更は無い。
 
 ---
 

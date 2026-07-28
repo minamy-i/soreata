@@ -1,20 +1,8 @@
 # NEXT
 
-更新：2026-07-21
-push：2026-07-21 21:15
+更新：2026-07-28
 
 ## 次にやること
-
-- [x] APIルート3箇所（`invite`・`account/delete`・`post-webhook`）の認証チェック重複を整理
-  - `lib/require-member.ts`に`requireApiSession(supabase)`を追加（既存の`requireSession`と同じくsupabaseは呼び出し側で渡す形に揃える）
-  - 戻り値は判別可能ユニオン型（`{ok:true, session} | {ok:false, response}`）にする
-  - 3箇所すべてを置き換える
-- [x] `requireApiSession()`（`lib/require-member.ts`）を`getSession()`から`getUser()`に変更
-  - 3箇所とも統一する（理由はdocs/NOTES.md参照。`account/delete`のみadminクライアントに直結しており危険度が高い）
-  - 呼び出し側（3ルート）の変更は無し
-- [x] `proxy.ts`（Next16で`middleware.ts`から名称変更。docs/NOTES.md参照）による2枚目の壁を追加
-  - `lib/supabase-middleware.ts`新設、`/api/*`を対象に`getUser()`チェック、`decompose`のみ除外
-  - 動作確認済み（保護3ルート401、decomposeは通過して400）
 
 任意（今回は対応せず）：`app/layout.tsx`のカスタムフォント（Hachi Maru Pop）警告。
 `next/font/google`はこのフォントの日本語サブセットを提供していないため単純差し替え不可。
